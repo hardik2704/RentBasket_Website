@@ -33,7 +33,14 @@ const Card = ({ myth, explanation }) => {
         }`}
       >
         {/* FRONT SIDE */}
-        <div className="absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-br from-[#ff4d4d] to-[#d01111] p-4 sm:p-6 md:p-8 [backface-visibility:hidden] flex flex-col items-center justify-center text-center shadow-lg border border-white/20 overflow-hidden">
+        <div 
+          className="absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-br from-[#ff4d4d] to-[#d01111] p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-center shadow-lg border border-white/20 overflow-hidden"
+          style={{ 
+            backfaceVisibility: "hidden", 
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(0deg)" // Explicitly set front face rotation
+          }}
+        >
           <InnerBorder />
           {/* Responsive Label */}
           <p className="text-white/90 text-[10px] sm:text-xs md:text-sm font-medium mb-2 md:mb-6 italic z-10">
@@ -46,7 +53,14 @@ const Card = ({ myth, explanation }) => {
         </div>
 
         {/* BACK SIDE */}
-        <div className="absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-b from-[#ba3737] to-[#610303] p-4 sm:p-6 md:p-8 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col items-center justify-center text-center shadow-2xl border border-red-900/50 overflow-hidden">
+        <div 
+          className="absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-b from-[#ba3737] to-[#610303] p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-center shadow-2xl border border-red-900/50 overflow-hidden"
+          style={{ 
+            backfaceVisibility: "hidden", 
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(180deg)" // Standard back face rotation
+          }}
+        >
           <InnerBorder />
           {/* Responsive Heading */}
           <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-serif font-bold mb-2 md:mb-4 tracking-tighter opacity-20 z-10">
