@@ -4,7 +4,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
-  base: "./", // Using relative path for versatility
+  base: "/RentBasket_Website/", // GitHub Pages base path — must match your repo name exactly
   server: {
     host: "::",
     port: 8080,
