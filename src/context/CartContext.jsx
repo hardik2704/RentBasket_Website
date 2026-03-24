@@ -1,6 +1,16 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const CartContext = createContext();
+const CART_STORAGE_KEY = "rentbasket_cart";
+
+const loadCart = () => {
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
 
 export const useCart = () => {
   const context = useContext(CartContext);
@@ -11,11 +21,15 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(loadCart);
+
+  // Persist to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (item) => {
     setCartItems((prev) => {
-      // Check if product already exists with same duration
       const existingIndex = prev.findIndex(
         (i) => i.productId === item.productId && i.duration === item.duration
       );
@@ -73,3 +87,4 @@ export const CartProvider = ({ children }) => {
 };
 
 export default CartContext;
+
