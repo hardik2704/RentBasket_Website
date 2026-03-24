@@ -1,4 +1,4 @@
-import { Truck } from "lucide-react";
+import { Truck, Wrench, Home, Package } from "lucide-react";
 import footerSection from "@/assets/footer-video.mp4";
 import { useRef, useEffect, useState } from "react";
 
@@ -10,22 +10,22 @@ const features = [
     bgColor: "bg-red-500",
   },
   {
-    icon: Truck,
+    icon: Wrench,
     title: "Free Maintenance & Repair",
     description:
-      "If something stops working, we fix it—quickly and responsibly.",
+      "If something stops working, we fix it - quickly and responsibly.",
     bgColor: "bg-red-500",
   },
   {
-    icon: Truck,
+    icon: Home,
     title: "Complete Home Setup",
     description:
       "Set up your home under ₹6,000/month with smart combos and essentials.",
     bgColor: "bg-red-500",
   },
   {
-    icon: Truck,
-    title: "Flexible Lock-in + Free Relocation",
+    icon: Package,
+    title: "Free Relocation",
     description:
       "Life changes. Your furniture plan should too. Relocate without the headache.",
     bgColor: "bg-red-500",
