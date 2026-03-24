@@ -1,16 +1,16 @@
 import { useState, useMemo } from "react";
-import { Plus, PackagePlus, CheckSquare, Square, RefreshCcw } from "lucide-react";
+import { Plus, PackagePlus, CheckSquare, Square, RefreshCcw, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { DURATION_OPTIONS, getRelatedProducts } from "@/data/products";
 import products from "@/data/products";
 import { toast } from "sonner";
 
-const COMBO_SURCHARGE = 50; // ₹50/mo per product when "Need all" is checked
+const NEW_PRODUCT_SURCHARGE = 65; // ₹65/mo extra for Brand New
 
 const CrossSellStrip = () => {
   const { cartItems, addToCart } = useCart();
-  const [needAll, setNeedAll] = useState(false);
+  const [wantsBrandNew, setWantsBrandNew] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // 1. Build a pool of suggestions based on cart contents
@@ -62,13 +62,13 @@ const CrossSellStrip = () => {
 
   const getDisplayPrice = (product) => {
     const base = product.pricing_by_duration["1_month"] ?? 0;
-    return needAll ? base + COMBO_SURCHARGE : base;
+    return wantsBrandNew ? base + NEW_PRODUCT_SURCHARGE : base;
   };
 
   const handleQuickAdd = (product) => {
     const defaultDuration = "1_month";
     const basePrice = product.pricing_by_duration[defaultDuration];
-    const finalPrice = needAll ? basePrice + COMBO_SURCHARGE : basePrice;
+    const finalPrice = wantsBrandNew ? basePrice + NEW_PRODUCT_SURCHARGE : basePrice;
     const label = DURATION_OPTIONS.find((d) => d.key === defaultDuration)?.label || "1 Month";
 
     addToCart({
@@ -79,16 +79,17 @@ const CrossSellStrip = () => {
       price: finalPrice,
       quantity: 1,
       startDate: new Date().toISOString().split("T")[0],
-      deposit: product.deposit,
+      deposit: 0, // Zero deposit incentive for recommendations
       image: product.image,
       category: product.category,
-      hasSurcharge: needAll, // Persist the opt-in surcharge status
+      isBrandNew: wantsBrandNew,
+      isRecommendation: true,
     });
 
     toast.success(`${product.name} added to cart`, {
-      description: needAll
-        ? `${label} plan · ₹${finalPrice.toLocaleString("en-IN")}/mo (incl. ₹${COMBO_SURCHARGE} combo fee)`
-        : `${label} plan · ₹${finalPrice.toLocaleString("en-IN")}/mo`,
+      description: wantsBrandNew
+        ? `${label} plan · ₹${finalPrice.toLocaleString("en-IN")}/mo (incl. ₹${NEW_PRODUCT_SURCHARGE} Brand New Upgrade)`
+        : `${label} plan · ₹${finalPrice.toLocaleString("en-IN")}/mo (Zero Deposit)`,
     });
   };
 
@@ -141,32 +142,31 @@ const CrossSellStrip = () => {
         )}
       </div>
 
-      {/* "Need all?" checkbox bar */}
-      <div className="flex items-center justify-between bg-secondary/50 border border-border rounded-2xl px-5 py-4 mb-5 shadow-sm">
+      {/* "Brand New Upgrade" checkbox bar */}
+      <div className="flex items-center justify-between bg-primary/[0.03] border border-primary/10 rounded-2xl px-5 py-4 mb-5 shadow-sm transition-all hover:bg-primary/5">
         <label
-          htmlFor="need-all-checkbox"
-          className="flex items-center gap-4 cursor-pointer select-none flex-1"
+          htmlFor="brand-new-checkbox"
+          className="flex items-center gap-4 cursor-pointer select-none flex-1 group"
         >
           <button
-            id="need-all-checkbox"
+            id="brand-new-checkbox"
             type="button"
-            onClick={() => setNeedAll((v) => !v)}
-            className="flex-shrink-0"
-            aria-checked={needAll}
+            onClick={() => setWantsBrandNew((v) => !v)}
+            className="flex-shrink-0 relative flex items-center justify-center"
+            aria-checked={wantsBrandNew}
             role="checkbox"
           >
-            {needAll ? (
-              <CheckSquare className="w-6 h-6 text-primary" />
-            ) : (
-              <Square className="w-6 h-6 text-muted-foreground" />
-            )}
+            <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${wantsBrandNew ? 'bg-primary border-primary' : 'border-primary/30 group-hover:border-primary'}`}>
+               <Sparkles className={`w-3.5 h-3.5 text-white transition-opacity ${wantsBrandNew ? 'opacity-100' : 'opacity-0'}`} />
+            </div>
           </button>
           <div className="pr-4">
-            <p className="text-sm font-bold text-foreground">
-              Add all 4 products together?
-            </p>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Unlock the bundle convenience. ₹{COMBO_SURCHARGE}/mo fee applies per item for extra setup support.
+            <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+              Upgrade to Brand New Products?
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-widest font-bold hidden sm:inline-block">Recommended</span>
+            </h4>
+            <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+              Get factory-fresh, untouched items for just ₹{NEW_PRODUCT_SURCHARGE}/mo extra per product.
             </p>
           </div>
         </label>
@@ -182,7 +182,7 @@ const CrossSellStrip = () => {
             <div
               key={product.id}
               className={`bg-card border rounded-2xl p-3.5 flex flex-col shadow-soft hover:shadow-card transition-all hover:-translate-y-1 ${
-                needAll ? "border-primary/40 ring-1 ring-primary/20 bg-primary/[0.02]" : "border-border"
+                wantsBrandNew ? "border-primary/30 bg-primary/[0.02]" : "border-border"
               }`}
             >
               {/* Thumbnail */}
@@ -206,20 +206,25 @@ const CrossSellStrip = () => {
               </Link>
 
               {/* Price & Rating */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex flex-col">
-                  <span className="text-[12px] font-extrabold text-primary">
-                    ₹{displayPrice.toLocaleString("en-IN")}/mo
-                  </span>
-                  {needAll && (
-                    <span className="text-[9px] text-muted-foreground line-through">
-                      ₹{basePrice.toLocaleString("en-IN")}
+              <div className="mb-2">
+                <div className="flex items-end justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[12px] font-extrabold text-primary">
+                      ₹{displayPrice.toLocaleString("en-IN")}/mo
                     </span>
-                  )}
+                    {wantsBrandNew && (
+                      <span className="text-[9px] text-muted-foreground line-through">
+                        ₹{basePrice.toLocaleString("en-IN")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-[10px] font-bold text-amber-500">★</span>
+                    <span className="text-[10px] font-semibold text-muted-foreground">{product.rating}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-0.5">
-                  <span className="text-[10px] font-bold text-amber-500">★</span>
-                  <span className="text-[10px] font-semibold text-muted-foreground">{product.rating}</span>
+                <div className="mt-2 text-[9px] text-green-700 font-bold bg-green-50 px-1.5 py-0.5 rounded inline-block border border-green-100">
+                  <s className="text-muted-foreground font-medium mr-1 opacity-70">₹{product.deposit}</s> ₹0 Deposit
                 </div>
               </div>
 

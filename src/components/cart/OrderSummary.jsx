@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle, Tag, ShieldCheck, Lock, Truck, Wrench, CreditCard, Bookmark } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ const MONTHLY_KEYS = new Set(["1_month", "3_months", "6_months", "9_months", "12
 
 const OrderSummary = () => {
   const { cartItems, getCartItemCount } = useCart();
+  const navigate = useNavigate();
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
 
@@ -207,11 +208,10 @@ const OrderSummary = () => {
               background:
                 "linear-gradient(89.03deg, #D72F26 -14.8%, #EF1040 50.11%, #FECC87 129.44%)",
             }}
-            onClick={() =>
-              toast.success("Proceeding to checkout...", {
-                description: "Checkout page will be available soon",
-              })
-            }
+            onClick={() => {
+              toast.success("Proceeding to checkout...");
+              navigate("/checkout");
+            }}
           >
             <Lock className="w-4 h-4" />
             Proceed to Checkout
