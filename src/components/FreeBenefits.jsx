@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import mascotSofa from "@/assets/ChatGPT Image Jan 17, 2026, 02_58_19 AM 1.png";
 
 const FreeBenefits = () => {
@@ -39,14 +40,11 @@ const FreeBenefits = () => {
               Get home setup quote
             </button>
           </a>
-          <a
-            href="https://www.rentbasket.com/"
-            target="_blank"
-            rel="noopener noreferrer">
-            <button className="btn-outline py-2.5 px-6 text-sm">
+          <Link to="/catalog">
+            <button className="btn-outline py-2.5 px-6 text-sm w-full">
               Browse Catalogue
             </button>
-          </a>
+          </Link>
         </div>
 
         <div className="mb-4 flex justify-center mt-12">
@@ -85,19 +83,16 @@ const FreeBenefits = () => {
           </div>
 
           <div className="flex flex-col gap-3">
-            <a
-              href="https://www.rentbasket.com/"
-              target="_blank"
-              rel="noopener noreferrer">
-              <button className="btn-outline py-3 px-8 text-center">
+            <Link to="/catalog" className="w-full">
+              <button className="btn-outline py-3 px-8 text-center w-full">
                 Browse Catalogue
               </button>
-            </a>
+            </Link>
             <a
               href="https://www.rentbasket.com/"
               target="_blank"
               rel="noopener noreferrer">
-              <button className="btn-primary py-3 px-8 text-center">
+              <button className="btn-primary py-3 px-8 text-center w-full">
                 Get home setup quote
               </button>
             </a>

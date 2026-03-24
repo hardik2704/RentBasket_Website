@@ -9,8 +9,7 @@ import { toast } from "sonner";
 const NEW_PRODUCT_SURCHARGE = 65; // ₹65/mo extra for Brand New
 
 const CrossSellStrip = () => {
-  const { cartItems, addToCart } = useCart();
-  const [wantsBrandNew, setWantsBrandNew] = useState(false);
+  const { cartItems, addToCart, isGlobalBrandNew, toggleGlobalBrandNew } = useCart();
   const [refreshKey, setRefreshKey] = useState(0);
 
   // 1. Build a pool of suggestions based on cart contents
@@ -62,13 +61,13 @@ const CrossSellStrip = () => {
 
   const getDisplayPrice = (product) => {
     const base = product.pricing_by_duration["1_month"] ?? 0;
-    return wantsBrandNew ? base + NEW_PRODUCT_SURCHARGE : base;
+    return isGlobalBrandNew ? base + NEW_PRODUCT_SURCHARGE : base;
   };
 
   const handleQuickAdd = (product) => {
     const defaultDuration = "1_month";
     const basePrice = product.pricing_by_duration[defaultDuration];
-    const finalPrice = wantsBrandNew ? basePrice + NEW_PRODUCT_SURCHARGE : basePrice;
+    const finalPrice = isGlobalBrandNew ? basePrice + NEW_PRODUCT_SURCHARGE : basePrice;
     const label = DURATION_OPTIONS.find((d) => d.key === defaultDuration)?.label || "1 Month";
 
     addToCart({
@@ -82,12 +81,12 @@ const CrossSellStrip = () => {
       deposit: 0, // Zero deposit incentive for recommendations
       image: product.image,
       category: product.category,
-      isBrandNew: wantsBrandNew,
+      isBrandNew: isGlobalBrandNew,
       isRecommendation: true,
     });
 
     toast.success(`${product.name} added to cart`, {
-      description: wantsBrandNew
+      description: isGlobalBrandNew
         ? `${label} plan · ₹${finalPrice.toLocaleString("en-IN")}/mo (incl. ₹${NEW_PRODUCT_SURCHARGE} Brand New Upgrade)`
         : `${label} plan · ₹${finalPrice.toLocaleString("en-IN")}/mo (Zero Deposit)`,
     });
@@ -143,33 +142,30 @@ const CrossSellStrip = () => {
       </div>
 
       {/* "Brand New Upgrade" checkbox bar */}
-      <div className="flex items-center justify-between bg-primary/[0.03] border border-primary/10 rounded-2xl px-5 py-4 mb-5 shadow-sm transition-all hover:bg-primary/5">
-        <label
-          htmlFor="brand-new-checkbox"
-          className="flex items-center gap-4 cursor-pointer select-none flex-1 group"
-        >
-          <button
-            id="brand-new-checkbox"
-            type="button"
-            onClick={() => setWantsBrandNew((v) => !v)}
-            className="flex-shrink-0 relative flex items-center justify-center"
-            aria-checked={wantsBrandNew}
-            role="checkbox"
-          >
-            <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${wantsBrandNew ? 'bg-primary border-primary' : 'border-primary/30 group-hover:border-primary'}`}>
-               <Sparkles className={`w-3.5 h-3.5 text-white transition-opacity ${wantsBrandNew ? 'opacity-100' : 'opacity-0'}`} />
-            </div>
-          </button>
-          <div className="pr-4">
-            <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
-              Upgrade to Brand New Products?
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-widest font-bold hidden sm:inline-block">Recommended</span>
-            </h4>
-            <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
-              Get factory-fresh, untouched items for just ₹{NEW_PRODUCT_SURCHARGE}/mo extra per product.
-            </p>
+      <div 
+        onClick={() => toggleGlobalBrandNew(!isGlobalBrandNew)}
+        className={`flex items-center gap-4 border rounded-2xl px-5 py-4 mb-5 shadow-sm transition-all cursor-pointer select-none group ${
+          isGlobalBrandNew 
+            ? 'bg-[#FDF6F5] border-[#F2D7D5]' 
+            : 'bg-[#FDF6F5] border-[#F2D7D5]' // Keeping the same fain pink tint based on user design
+        }`}
+      >
+        <div className="flex-shrink-0 relative flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#E53935] flex items-center justify-center transition-transform hover:scale-105">
+             <Sparkles className="w-5 h-5 text-white/90 fill-transparent" strokeWidth={2.5} />
           </div>
-        </label>
+        </div>
+        <div className="flex-1">
+          <h4 className="text-base font-bold text-[#202020] flex items-center gap-2">
+            Upgrade to Brand New Products?
+            <span className="text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-extrabold bg-[#FCECEB] text-[#E53935]">
+              RECOMMENDED
+            </span>
+          </h4>
+          <p className="text-sm text-[#505050] leading-relaxed mt-0.5">
+            Get factory-fresh, untouched items for just ₹{NEW_PRODUCT_SURCHARGE}/mo extra per product.
+          </p>
+        </div>
       </div>
 
       {/* Product cards - Grid instead of scroll */}
@@ -182,7 +178,7 @@ const CrossSellStrip = () => {
             <div
               key={product.id}
               className={`bg-card border rounded-2xl p-3.5 flex flex-col shadow-soft hover:shadow-card transition-all hover:-translate-y-1 ${
-                wantsBrandNew ? "border-primary/30 bg-primary/[0.02]" : "border-border"
+                isGlobalBrandNew ? "border-primary/30 bg-primary/[0.02]" : "border-border"
               }`}
             >
               {/* Thumbnail */}
@@ -212,7 +208,7 @@ const CrossSellStrip = () => {
                     <span className="text-[12px] font-extrabold text-primary">
                       ₹{displayPrice.toLocaleString("en-IN")}/mo
                     </span>
-                    {wantsBrandNew && (
+                    {isGlobalBrandNew && (
                       <span className="text-[9px] text-muted-foreground line-through">
                         ₹{basePrice.toLocaleString("en-IN")}
                       </span>

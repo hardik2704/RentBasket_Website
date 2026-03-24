@@ -55,9 +55,9 @@ const Checkout = () => {
     setTimeout(() => {
       setIsProcessing(false);
       // Build the order data payload
-      const subtotalRent = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const subtotalRent = cartItems.reduce((sum, item) => sum + (item.price - (item.isBrandNew ? 65 : 0)) * item.quantity, 0);
       const totalDeposit = cartItems.reduce((sum, item) => sum + item.deposit, 0);
-      const totalSurcharge = cartItems.reduce((sum, item) => sum + (item.hasSurcharge ? 50 * item.quantity : 0), 0);
+      const totalSurcharge = cartItems.reduce((sum, item) => sum + (item.isBrandNew ? 65 * item.quantity : 0), 0);
       
       const orderPayload = {
         orderId: `RB-${Math.floor(Math.random() * 90000) + 10000}`,

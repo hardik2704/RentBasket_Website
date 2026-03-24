@@ -1,4 +1,4 @@
-import { Minus, Plus, Trash2, ChevronDown, CheckCircle, Calendar, Bookmark, Star } from "lucide-react";
+import { Minus, Plus, Trash2, ChevronDown, CheckCircle, Calendar, Bookmark, Star, Sparkles } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
@@ -6,7 +6,7 @@ import { DURATION_OPTIONS, getProductById } from "@/data/products";
 import { Link } from "react-router-dom";
 
 const MONTHLY_KEYS = new Set(["1_month", "3_months", "6_months", "9_months", "12_months"]);
-const COMBO_SURCHARGE = 50;
+const NEW_PRODUCT_SURCHARGE = 65;
 
 const CartItemCard = ({ item }) => {
   const { updateItem, removeFromCart } = useCart();
@@ -32,8 +32,8 @@ const CartItemCard = ({ item }) => {
   const handleDurationChange = (newDurationKey) => {
     if (!product) return;
     const basePrice = product.pricing_by_duration[newDurationKey];
-    const finalPrice = item.hasSurcharge ? basePrice + COMBO_SURCHARGE : basePrice;
-    const newDeposit = product.deposit;
+    const finalPrice = item.isBrandNew ? basePrice + NEW_PRODUCT_SURCHARGE : basePrice;
+    const newDeposit = item.isRecommendation ? 0 : product.deposit;
     const newLabel = DURATION_OPTIONS.find((d) => d.key === newDurationKey)?.label || "";
     updateItem(item.cartItemId, {
       duration: newDurationKey,
@@ -157,10 +157,10 @@ const CartItemCard = ({ item }) => {
               <span className="text-muted-foreground">Rent</span>
               <span>₹{item.price.toLocaleString("en-IN")}{isMonthly ? "/mo" : ""} × {item.quantity}</span>
             </div>
-            {item.hasSurcharge && (
+            {item.isBrandNew && (
               <div className="flex justify-between text-[10px] text-primary/80 italic font-medium">
-                <span>Combo Setup Fee</span>
-                <span>+₹{COMBO_SURCHARGE.toLocaleString("en-IN")}/mo</span>
+                <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3"/> Brand New Upgrade</span>
+                <span>+₹{NEW_PRODUCT_SURCHARGE.toLocaleString("en-IN")}/mo</span>
               </div>
             )}
             <div className="flex justify-between text-xs">
@@ -277,10 +277,10 @@ const CartItemCard = ({ item }) => {
             <div className="text-lg font-bold text-foreground">
               ₹{rentOnly.toLocaleString("en-IN")}{isMonthly ? <span className="text-sm font-normal text-muted-foreground">/mo</span> : ""}
             </div>
-            {item.hasSurcharge && (
+            {item.isBrandNew && (
               <div className="text-[10px] text-primary font-semibold flex items-center justify-end gap-1">
-                <Bookmark className="w-2.5 h-2.5 fill-primary" />
-                Incl. Setup Fee (₹{COMBO_SURCHARGE}/mo)
+                <Sparkles className="w-2.5 h-2.5 fill-primary" />
+                Brand New Upgrade (+₹{NEW_PRODUCT_SURCHARGE}/mo)
               </div>
             )}
             <div className="text-xs text-muted-foreground">

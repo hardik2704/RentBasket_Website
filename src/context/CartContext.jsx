@@ -59,6 +59,17 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => setCartItems([]);
 
+  const isGlobalBrandNew = cartItems.length > 0 && cartItems.every(i => i.isBrandNew);
+
+  const toggleGlobalBrandNew = (enabled) => {
+    setCartItems(prev => prev.map(item => {
+      // Avoid modifying items that are already in the requested state
+      if (item.isBrandNew === enabled) return item;
+      const newPrice = enabled ? item.price + 65 : item.price - 65;
+      return { ...item, isBrandNew: enabled, price: newPrice };
+    }));
+  };
+
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
       return total + item.price * item.quantity + item.deposit;
@@ -79,6 +90,8 @@ export const CartProvider = ({ children }) => {
         clearCart,
         getCartTotal,
         getCartItemCount,
+        isGlobalBrandNew,
+        toggleGlobalBrandNew,
       }}
     >
       {children}

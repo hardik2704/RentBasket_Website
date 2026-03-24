@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CheckCircle, Tag, ShieldCheck, Lock, Truck, Wrench, CreditCard, Bookmark } from "lucide-react";
+import { CheckCircle, Tag, ShieldCheck, Lock, Truck, Wrench, CreditCard, Bookmark, Sparkles } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 
@@ -14,17 +14,24 @@ const OrderSummary = () => {
 
   const itemCount = getCartItemCount();
 
-  // Calculate totals
+  // Calculate totals - explicitly separate base rent and new product surcharges
   const subtotalRent = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (item.price - (item.isBrandNew ? 65 : 0)) * item.quantity,
     0
   );
+  
+  const totalSurcharge = cartItems.reduce(
+    (sum, item) => sum + (item.isBrandNew ? 65 * item.quantity : 0),
+    0
+  );
+  
   const totalDeposit = cartItems.reduce(
     (sum, item) => sum + item.deposit,
     0
   );
+  
   const discount = couponApplied ? Math.round(subtotalRent * 0.1) : 0;
-  const grandTotal = subtotalRent - discount + totalDeposit;
+  const grandTotal = subtotalRent + totalSurcharge - discount + totalDeposit;
 
   const hasMonthlyItems = cartItems.some((item) => MONTHLY_KEYS.has(item.duration));
 
@@ -95,15 +102,15 @@ const OrderSummary = () => {
             <span className="text-sm font-medium">₹{totalDeposit.toLocaleString("en-IN")}</span>
           </div>
 
-          {/* Surcharges */}
-          {cartItems.some(i => i.hasSurcharge) && (
+          {/* Brand New Surcharges */}
+          {totalSurcharge > 0 && (
             <div className="flex items-center justify-between text-primary/80">
               <span className="text-sm flex items-center gap-1">
-                <Bookmark className="w-3.5 h-3.5" />
-                Bundle Setup Fees
+                <Sparkles className="w-3.5 h-3.5" />
+                Brand New Upgrade
               </span>
               <span className="text-sm font-medium">
-                ₹{cartItems.reduce((sum, i) => sum + (i.hasSurcharge ? 50 * i.quantity : 0), 0).toLocaleString("en-IN")}
+                ₹{totalSurcharge.toLocaleString("en-IN")}
                 {hasMonthlyItems && <span className="text-xs font-normal">/mo</span>}
               </span>
             </div>
