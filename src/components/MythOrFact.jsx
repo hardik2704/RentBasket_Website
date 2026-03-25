@@ -1,30 +1,38 @@
 import React, { useState } from "react";
 
-const Card = ({ myth, reality }) => {
-  const [isFlipped, setIsFlipped] = useState(false);
+// Common Inner Border Style - Adjusted insets for mobile
+const InnerBorder = ({ variant = "white" }) => (
+  <div
+    className={`
+      absolute 
+      inset-2 sm:inset-3 md:inset-4 
+      border-[3px] md:border-[2px] 
+      pointer-events-none 
+      z-0 
+      rounded-sm
+      ${variant === "white"
+        ? "border-white/40"
+        : "border-[#ff0000] shadow-[0_0_15px_rgba(255,0,0,0.8),inset_0_0_10px_rgba(255,0,0,0.5)]"
+      }
+    `}
+  />
+);
 
-  // Common Inner Border Style - Adjusted insets for mobile
-  const InnerBorder = ({ variant = "white" }) => (
-    <div
-      className={`
-        absolute 
-        inset-2 sm:inset-3 md:inset-4 
-        border-[3px] md:border-[2px] 
-        pointer-events-none 
-        z-0 
-        rounded-sm
-        ${variant === "white"
-          ? "border-white/40"
-          : "border-[#ff0000] shadow-[0_0_15px_rgba(255,0,0,0.8),inset_0_0_10px_rgba(255,0,0,0.5)]"
-        }
-      `}
-    />
-  );
+const Card = ({ belief, reality }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
 
   return (
     <div
       className="group h-[280px] sm:h-[320px] md:h-[350px] w-full [perspective:1000px] cursor-pointer"
       onClick={() => setIsFlipped(!isFlipped)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setIsFlipped(!isFlipped);
+        }
+      }}
     >
       <div
         className={`relative h-full w-full rounded-2xl transition-all duration-700 [transform-style:preserve-3d] ${isFlipped ? "[transform:rotateY(180deg)]" : ""
