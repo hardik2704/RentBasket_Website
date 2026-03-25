@@ -27,28 +27,24 @@ const steps = [
 ];
 
 const StepItem = ({ step, index, scrollYProgress, totalSteps }) => {
-  // Map progress: 4 steps means they light up sequentially across the 0..1 interval
-  // e.g. approx points: 0, 0.33, 0.66, 1
   const interval = 1 / (totalSteps - 1);
   const target = index * interval;
 
-  // Define the reveal window for this step
   const start = Math.max(0, target - 0.2);
   const end = Math.min(1, target + 0.1);
 
-  // Directly map the scroll progress to style values smoothly
   const opacity = useTransform(scrollYProgress, [start, end], [0.35, 1]);
   const scale = useTransform(scrollYProgress, [start, end], [0.85, 1.1]);
   const xOffset = useTransform(scrollYProgress, [start, end], [-15, 0]);
 
   return (
     <motion.div
-      className="relative flex gap-5 z-10"
+      className="relative flex gap-5 z-10 w-full"
       style={{ opacity, x: xOffset }}
     >
       <div className="flex flex-col items-center">
-        {/* We use bg-white on the outer div so it visibly blocks the background line */}
-        <div className="bg-white rounded-lg p-1">
+        {/* Strict w-12 enforces exact center alignment for the background line (16px pl-4 + 24px half-width = 40px absolute) */}
+        <div className="bg-white rounded-lg p-1 w-12 flex justify-center">
           <motion.div
             className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-sm"
             style={{ scale }}
@@ -61,7 +57,7 @@ const StepItem = ({ step, index, scrollYProgress, totalSteps }) => {
         <h3 className="font-bold text-lg md:text-xl mb-1 text-card-foreground">
           {step.title}
         </h3>
-        <p className="text-muted-foreground">{step.description}</p>
+        <p className="text-muted-foreground text-sm md:text-base pr-4 md:pr-0">{step.description}</p>
       </div>
     </motion.div>
   );
@@ -70,58 +66,57 @@ const StepItem = ({ step, index, scrollYProgress, totalSteps }) => {
 const HowItWorks = () => {
   const containerRef = useRef(null);
 
-  // Track the raw scroll position within the container bounds
+  // Offset ensures the container fully triggers 1.0 progress well before disappearing off the top
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    // Start tracking when container top hits center of viewport
-    // End tracking when container bottom hits center of viewport
-    offset: ["start center", "end center"],
+    offset: ["start 85%", "end 60%"],
   });
 
   return (
     <section className="section-container py-12 md:py-20 overflow-hidden">
-      <div className="flex flex-col lg:flex-row gap-12">
-        <div className="flex flex-col justify-center align-middle m-auto w-full max-w-2xl">
-          <div className="flex items-center gap-4 mb-10">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold">
-              How it works in
-              <br />
-              4 simple steps.
-            </h2>
-            <img
-              src={mascotPeek}
-              alt="RentBasket mascot"
-              className="w-24 md:w-32 md:block"
-            />
-          </div>
-
-          {/* Steps Container tracked by Framer Motion */}
-          <div ref={containerRef} className="relative mt-4 pl-2 lg:pl-6">
-            
-            {/* Base Background Line (Faded) */}
-            <div className="absolute left-[33px] lg:left-[49px] top-6 bottom-16 w-[3px] bg-primary/20 rounded-full" />
-
-            {/* Dynamic Active Line connected to exactly how far user has scrolled */}
-            <motion.div
-              className="absolute left-[33px] lg:left-[49px] top-6 bottom-16 w-[3px] bg-primary rounded-full origin-top"
-              style={{ scaleY: scrollYProgress }}
-            />
-
-            {/* Individual Steps */}
-            <div className="flex flex-col gap-2">
-              {steps.map((step, index) => (
-                <StepItem
-                  key={index}
-                  step={step}
-                  index={index}
-                  totalSteps={steps.length}
-                  scrollYProgress={scrollYProgress}
-                />
-              ))}
-            </div>
-            
-          </div>
+      <div className="flex flex-col w-full max-w-3xl mx-auto">
+        
+        {/* Header Section */}
+        <div className="flex items-center justify-center gap-4 md:gap-8 mb-10 mx-auto w-fit">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-center md:text-left">
+            How it works in
+            <br />
+            4 simple steps.
+          </h2>
+          <img
+            src={mascotPeek}
+            alt="RentBasket mascot"
+            className="w-20 sm:w-24 md:w-32 block"
+          />
         </div>
+
+        {/* Steps Container tracked by Framer Motion */}
+        <div ref={containerRef} className="relative mt-4 w-full max-w-lg mx-auto">
+          
+          {/* Base Background Line (Faded) - perfectly centered behind the icons located at left: 40px (16px padding + 24px icon center) */}
+          <div className="absolute left-[39px] top-6 bottom-16 w-[2px] bg-primary/20 rounded-full" />
+
+          {/* Dynamic Active Line connected to exactly how far user has scrolled */}
+          <motion.div
+            className="absolute left-[39px] top-6 bottom-16 w-[2px] bg-primary rounded-full origin-top"
+            style={{ scaleY: scrollYProgress }}
+          />
+
+          {/* Individual Steps */}
+          <div className="flex flex-col gap-2 relative z-10 pl-4">
+            {steps.map((step, index) => (
+              <StepItem
+                key={index}
+                step={step}
+                index={index}
+                totalSteps={steps.length}
+                scrollYProgress={scrollYProgress}
+              />
+            ))}
+          </div>
+          
+        </div>
+
       </div>
     </section>
   );
