@@ -213,21 +213,6 @@ const WhatMakesDifferent = () => {
               rel="noopener noreferrer"
             >
               <button
-                className="btn-primary"
-                style={{
-                  width: "70%",
-                  margin: "auto",
-                }}
-              >
-                Get home setup quote
-              </button>
-            </a>
-            <a
-              href="https://www.rentbasket.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button
                 className="btn-outline"
                 style={{
                   width: "70%",
@@ -246,21 +231,6 @@ const WhatMakesDifferent = () => {
             Get Started Today!
           </h3>
           <div className="flex flex-col gap-4 justify-center">
-            <a
-              href="https://www.rentbasket.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button
-                className="btn-primary"
-                style={{
-                  width: "20%",
-                  margin: "auto",
-                }}
-              >
-                Get home setup quote
-              </button>
-            </a>
             <a
               href="https://www.rentbasket.com/"
               target="_blank"

@@ -29,17 +29,7 @@ const FreeBenefits = () => {
 
 
         <div className="flex flex-col gap-2 w-75% max-w-xs mt-10">
-          <a
-            href="https://www.rentbasket.com/"
-            target="_blank"
-            rel="noopener noreferrer">
-            <button className="btn-primary py-2.5 px-6 text-sm"
-              style={{
-                background: "linear-gradient(89.03deg, #D72F26 -14.8%, #EF1040 50.11%, #FECC87 129.44%)"
-              }}>
-              Get home setup quote
-            </button>
-          </a>
+
           <Link to="/catalog">
             <button className="btn-outline py-2.5 px-6 text-sm w-full">
               Browse Catalogue
@@ -67,7 +57,7 @@ const FreeBenefits = () => {
           />
         </div>
 
-        <div className="flex-1 flex flex-row items-start gap-12">
+        <div className="flex-1 flex flex-row items-center gap-12">
           <div>
             <h2 className="text-5xl font-bold mb-4">
               <span className="text-primary">Free</span>
@@ -82,20 +72,12 @@ const FreeBenefits = () => {
             </ul>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col justify-center">
             <Link to="/catalog" className="w-full">
-              <button className="btn-outline py-3 px-8 text-center w-full">
+              <button className="btn-outline py-3 px-8 text-center w-full whitespace-nowrap">
                 Browse Catalogue
               </button>
             </Link>
-            <a
-              href="https://www.rentbasket.com/"
-              target="_blank"
-              rel="noopener noreferrer">
-              <button className="btn-primary py-3 px-8 text-center w-full">
-                Get home setup quote
-              </button>
-            </a>
           </div>
         </div>
       </div>
