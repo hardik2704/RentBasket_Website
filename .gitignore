@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output (published to the gh-pages branch by `npm run deploy`, not tracked here)
+dist/
+dist.zip
+*.tsbuildinfo
+
+# Test & tooling output
+playwright-report/
+test-results/
+graphify-out/
+.vite/
+
+# Local environment (keep .env.example tracked as the template)
+.env
+.env.local
+*.local
+
+# OS / editor junk
+.DS_Store
+Thumbs.db

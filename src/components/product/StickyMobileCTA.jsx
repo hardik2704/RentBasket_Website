@@ -1,8 +1,9 @@
 import { DURATION_OPTIONS } from "@/data/products";
+import { discountedRent } from "@/lib/pricing";
 
 const StickyMobileCTA = ({ product, selectedDuration, onAddToCart }) => {
   const pricing = product.pricing_by_duration;
-  const price = pricing[selectedDuration] || 0;
+  const price = discountedRent(pricing[selectedDuration] || 0, product.percent_discount);
   const isMonthly = ["1_month", "3_months", "6_months", "11_months", "12_months", "24_months", "36_months"].includes(
     selectedDuration,
   );

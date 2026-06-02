@@ -55,17 +55,11 @@ const SuccessHero = ({ orderData }) => {
         <span className="flex-1 text-left">You will receive booking updates on WhatsApp.</span>
       </div>
 
-      {/* Primary CTAs */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full max-w-md">
-        <Link 
-          to="/account/orders" 
+      {/* Primary CTA */}
+      <div className="mt-8 flex w-full max-w-md">
+        <Link
+          to="/catalog"
           className="flex-1 py-3.5 rounded-xl text-white font-bold text-sm shadow-md shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-95 flex items-center justify-center gap-2 bg-primary"
-        >
-          Track Order
-        </Link>
-        <Link 
-          to="/catalog" 
-          className="flex-1 py-3.5 rounded-xl text-foreground font-bold text-sm shadow-sm transition-all hover:bg-secondary active:scale-95 flex items-center justify-center gap-2 border border-border bg-card"
         >
           Continue Browsing
           <ChevronRight className="w-4 h-4" />

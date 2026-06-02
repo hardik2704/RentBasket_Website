@@ -28,7 +28,18 @@ function writeRouteIndex(...segments) {
 copyFileSync(indexPath, join(distDir, "404.html"));
 
 // Static routes — GitHub Pages serves these with HTTP 200
-const staticRoutes = ["catalog", "catalogue", "cart", "checkout", "order-success"];
+const staticRoutes = [
+  "catalog",
+  "catalogue",
+  "cart",
+  "checkout",
+  "order-success",
+  "terms-n-conditions",
+  "shipping-returns",
+  "faqs",
+  "about",
+  "contact"
+];
 for (const route of staticRoutes) {
   writeRouteIndex(route);
 }

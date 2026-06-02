@@ -22,15 +22,15 @@ const DownloadSection = () => {
       <section className="relative w-full bg-gradient-download pt-20 md:pt-24 lg:pt-28 pb-12 md:pb-16">
         <div className="container mx-auto px-6 relative z-10">
           {/* DOWNLOAD TODAY heading — now sits on the red platform, guiding down */}
-          <div className="md:max-w-[50%] md:ml-0 mx-auto md:mx-0 text-center md:text-left mb-6 md:mb-10">
+          <div className="lg:max-w-[50%] lg:ml-0 mx-auto lg:mx-0 text-center lg:text-left mb-6 lg:mb-10">
             <h1 className="font-display text-3xl md:text-5xl lg:text-5xl font-bold tracking-tight text-white">
               DOWNLOAD TODAY
             </h1>
           </div>
 
-          <div className="flex flex-col items-start md:max-w-md md:ml-0 mx-auto md:mx-0">
+          <div className="flex flex-col items-center lg:items-start lg:max-w-md lg:ml-0 mx-auto lg:mx-0">
             {/* Feature Text */}
-            <div className="mb-6 md:mb-8 space-y-1 w-full md:text-left text-center">
+            <div className="mb-6 md:mb-8 space-y-1 w-full lg:text-left text-center">
               <p className="hidden lg:flex text-lg md:text-xl font-semibold text-white md:text-2xl">
                 Never Miss an Offer
               </p>
@@ -42,7 +42,16 @@ const DownloadSection = () => {
               </p>
             </div>
 
-            {/* Mobile Buttons */}
+            {/* Phone Mockup for Mobile/Tablet in-flow (centered, not overlapping) */}
+            <div className="lg:hidden w-full flex justify-center mb-8">
+              <img
+                src={phoneAppScreen}
+                alt="RentBasket App Interface"
+                className="h-[240px] sm:h-[300px] md:h-[360px] object-contain drop-shadow-2xl"
+              />
+            </div>
+
+            {/* Mobile/Tablet Buttons */}
             <div className="flex lg:hidden flex-row gap-3 w-full items-center justify-center">
               <a
                 href="https://play.google.com/store/apps/details?id=com.rentoktenant&pcampaignid=web_share&pli=1"
@@ -113,23 +122,7 @@ const DownloadSection = () => {
           />
         </div>
 
-        {/* Tablet Phone Mockup */}
-        <div className="hidden md:block lg:hidden absolute right-4 -top-16 z-20">
-          <img
-            src={phoneAppScreen}
-            alt="RentBasket App Interface"
-            className="h-[420px] -rotate-8 transform object-contain drop-shadow-2xl"
-          />
-        </div>
 
-        {/* Mobile Phone Mockup */}
-        <div className="flex md:hidden absolute right-2 -top-12 z-20 opacity-95">
-          <img
-            src={phoneAppScreen}
-            alt="RentBasket App Interface"
-            className="h-[220px] -rotate-6 transform object-contain drop-shadow-2xl"
-          />
-        </div>
       </section>
     </section>
   );

@@ -1,12 +1,48 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { syncCart, CART_SYNC_ENABLED } from "@/api/cart";
+import { getCartId } from "@/lib/cartId";
 
 const CartContext = createContext();
 const CART_STORAGE_KEY = "rentbasket_cart";
+const CART_SYNC_DEBOUNCE_MS = 3000;
+
+/**
+ * Unique id for a cart line item. Date.now() alone collides when several items
+ * are added in the same millisecond (e.g. the "Add all" combo button), which
+ * makes remove/update hit the wrong line. Mirrors the id strategy in lib/cartId.js.
+ */
+const makeCartItemId = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `ci_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+/**
+ * Normalise one stored cart item so the pricing math can never crash on it.
+ * A cart saved by an older build may be missing fields the UI now relies on
+ * (price/quantity/deposit must be numbers; every line needs an id). Returns
+ * null for anything that isn't a usable item, so it gets dropped on load.
+ */
+const normalizeCartItem = (raw) => {
+  if (!raw || typeof raw !== "object" || !raw.productId) return null;
+  const toNumber = (v, fallback) => (Number.isFinite(Number(v)) ? Number(v) : fallback);
+  return {
+    ...raw,
+    cartItemId: raw.cartItemId || makeCartItemId(),
+    price: toNumber(raw.price, 0),
+    quantity: Math.max(1, toNumber(raw.quantity, 1)),
+    deposit: toNumber(raw.deposit, 0),
+    rent: toNumber(raw.rent ?? raw.price, 0),
+    percent_discount: toNumber(raw.percent_discount ?? 0, 0),
+    security_multiple: toNumber(raw.security_multiple ?? (raw.isRecommendation ? 0 : 2), 2),
+  };
+};
 
 const loadCart = () => {
   try {
     const stored = localStorage.getItem(CART_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const parsed = stored ? JSON.parse(stored) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeCartItem).filter(Boolean);
   } catch {
     return [];
   }
@@ -22,10 +58,23 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(loadCart);
+  const [coupon, setCoupon] = useState(null);
 
-  // Persist to localStorage on every change
+  // Persist to localStorage on every change (primary store)
   useEffect(() => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // Periodically sync the cart to the backend (debounced — fires once activity
+  // settles, not on every click). No-op until VITE_API_BASE_URL is configured.
+  useEffect(() => {
+    if (!CART_SYNC_ENABLED) return;
+    const timer = setTimeout(() => {
+      syncCart(getCartId(), cartItems).catch((err) =>
+        console.warn("Cart sync failed:", err)
+      );
+    }, CART_SYNC_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
   }, [cartItems]);
 
   const addToCart = (item) => {
@@ -41,7 +90,7 @@ export const CartProvider = ({ children }) => {
         };
         return updated;
       }
-      return [...prev, { ...item, cartItemId: Date.now().toString() }];
+      return [...prev, { ...item, cartItemId: makeCartItemId() }];
     });
   };
 
@@ -59,21 +108,16 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => setCartItems([]);
 
-  const isGlobalBrandNew = cartItems.length > 0 && cartItems.every(i => i.isBrandNew);
-
-  const toggleGlobalBrandNew = (enabled) => {
-    setCartItems(prev => prev.map(item => {
-      // Avoid modifying items that are already in the requested state
-      if (item.isBrandNew === enabled) return item;
-      const newPrice = enabled ? item.price + 65 : item.price - 65;
-      return { ...item, isBrandNew: enabled, price: newPrice };
-    }));
+  const applyCoupon = (code) => {
+    if (code.trim().toUpperCase() === "RENTBASKET10") {
+      setCoupon({ type: "percent", value: 10, code: "RENTBASKET10" });
+      return true;
+    }
+    return false;
   };
 
-  const getCartTotal = () => {
-    return cartItems.reduce((total, item) => {
-      return total + item.price * item.quantity + item.deposit;
-    }, 0);
+  const removeCoupon = () => {
+    setCoupon(null);
   };
 
   const getCartItemCount = () => {
@@ -88,10 +132,10 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         updateItem,
         clearCart,
-        getCartTotal,
         getCartItemCount,
-        isGlobalBrandNew,
-        toggleGlobalBrandNew,
+        coupon,
+        applyCoupon,
+        removeCoupon,
       }}
     >
       {children}

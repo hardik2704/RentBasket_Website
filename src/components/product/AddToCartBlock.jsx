@@ -1,15 +1,16 @@
-import { useState } from "react";
-import { Minus, Plus, Calendar, ShieldCheck, Clock, ArrowRightLeft, Headphones } from "lucide-react";
+import { Minus, Plus, ShieldCheck, Clock, ArrowRightLeft, Headphones } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { DURATION_OPTIONS } from "@/data/products";
+import { discountedRent } from "@/lib/pricing";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const AddToCartBlock = ({ product, selectedDuration, quantity, onQuantityChange }) => {
-  const [startDate, setStartDate] = useState("");
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   const pricing = product.pricing_by_duration;
-  const price = pricing[selectedDuration] || 0;
+  const price = discountedRent(pricing[selectedDuration] || 0, product.percent_discount);
   const durationLabel = DURATION_OPTIONS.find((d) => d.key === selectedDuration)?.label || "";
 
   const handleAddToCart = () => {
@@ -20,14 +21,18 @@ const AddToCartBlock = ({ product, selectedDuration, quantity, onQuantityChange 
       durationLabel,
       price,
       quantity,
-      startDate: startDate || new Date().toISOString().split("T")[0],
-      deposit: product.deposit,
+      startDate: new Date().toISOString().split("T")[0],
+      adv_security: product.adv_security,
       image: product.image,
       category: product.category,
+      rent: product.pricing_by_duration[selectedDuration],
+      percent_discount: product.percent_discount,
+      security_multiple: product.security_multiple,
     });
     toast.success(`${product.name} added to cart`, {
       description: `${durationLabel} plan · ₹${price.toLocaleString("en-IN")}`,
     });
+    navigate("/cart");
   };
 
   const trustPoints = [
@@ -36,12 +41,6 @@ const AddToCartBlock = ({ product, selectedDuration, quantity, onQuantityChange 
     { icon: Clock, label: "Flexible durations" },
     { icon: ArrowRightLeft, label: "Relocation available" },
   ];
-
-  // Get tomorrow's date as minimum start date
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split("T")[0];
-
   return (
     <div className="space-y-4">
       {/* Controls Row */}
@@ -66,23 +65,6 @@ const AddToCartBlock = ({ product, selectedDuration, quantity, onQuantityChange 
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
-          </div>
-        </div>
-
-        {/* Start Date */}
-        <div className="flex items-center gap-3 flex-1">
-          <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-            Start
-          </span>
-          <div className="relative flex-1">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              min={minDate}
-              className="w-full pl-9 pr-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background"
-            />
           </div>
         </div>
       </div>

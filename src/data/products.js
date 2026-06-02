@@ -21,18 +21,14 @@ import best5 from "@/assets/Bestsellers/5.png";
 
 // ─── Constants ────────────────────────────────────────────
 
+// V1 main site: monthly rentals only (1 month and up). Sub-month/day tiers move
+// to the future "RentBasket Mini" site. The live API supplies the real monthly
+// tiers (rent_3/6/9/12) once wired; the mock keeps 1/3/6/12 which it already has.
 export const DURATION_OPTIONS = [
-  { key: "1_day", label: "1 Day", short: "1D" },
-  { key: "3_days", label: "3 Days", short: "3D" },
-  { key: "7_days", label: "7 Days", short: "7D" },
-  { key: "15_days", label: "15 Days", short: "15D" },
   { key: "1_month", label: "1 Month", short: "1M" },
   { key: "3_months", label: "3 Months", short: "3M" },
   { key: "6_months", label: "6 Months", short: "6M" },
-  { key: "11_months", label: "11 Months", short: "11M" }, // for 11 months instead of 9 months
   { key: "12_months", label: "12 Months", short: "12M" },
-  { key: "24_months", label: "24 Months", short: "24M" }, // for 24 months instead of 12 months as the final cost
-  { key: "36_months", label: "36 Months", short: "36M" }, // for 36 months instead of 12 months as the final cost
 ];
 
 export const CATEGORIES = [
@@ -92,10 +88,7 @@ export const MONTHLY_DURATION_KEYS = [
   "1_month",
   "3_months",
   "6_months",
-  "11_months",
   "12_months",
-  "24_months",
-  "36_months",
 ];
 
 // Default FAQ for all products
@@ -129,7 +122,7 @@ export const DEFAULT_FAQ = [
 // ─── Product Data ─────────────────────────────────────────
 // New SKUs: add rows to products-catalog.csv + loadProductsFromCsv.js (not merged here yet).
 
-const products = [
+const rawProducts = [
   // ── Appliances: Washing Machines ──
   {
     id: "wm-top-load-01",
@@ -580,6 +573,11 @@ const products = [
     related_product_ids: ["sofa-3seat-01", "chair-modern-01", "bed-double-01", "combo-bachelor-01"],
   },
 ];
+
+// No defaults injected — percent_discount and security_multiple must be set
+// explicitly per product in rawProducts. The live API owns these values; the
+// mock must not silently manufacture financial figures.
+const products = rawProducts;
 
 // ─── Helpers ──────────────────────────────────────────────
 

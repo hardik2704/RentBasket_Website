@@ -18,7 +18,7 @@ const HeroSection = ({ activeCategory = "Furniture", onCategoryChange }) => {
     <section className="relative flex flex-col lg:flex-row bg-background overflow-hidden lg:min-h-[440px]">
 
       {/* ── Content column ───────────────────────────────────────── */}
-      <div className="flex flex-col justify-center px-5 py-8 sm:px-8 lg:px-16 xl:px-20 z-10 w-full lg:w-[44%] lg:shrink-0 gap-5 lg:gap-6">
+      <div className="flex flex-col justify-center px-5 py-8 sm:px-8 lg:px-16 xl:px-20 z-10 w-full lg:w-[44%] lg:shrink-0 gap-5 lg:gap-6 order-2 lg:order-1">
 
         {/* Headline */}
         <motion.h1
@@ -113,7 +113,7 @@ const HeroSection = ({ activeCategory = "Furniture", onCategoryChange }) => {
       {/* ── Mascot video ─────────────────────────────────────────── */}
       {/* Mobile: constrained height so it doesn't dominate below the CTA */}
       {/* Desktop: fills remaining width alongside content column */}
-      <div className="relative flex items-center justify-center w-full h-[220px] sm:h-[280px] lg:h-auto lg:flex-1">
+      <div className="relative flex items-center justify-center w-full h-[220px] sm:h-[280px] lg:h-auto lg:flex-1 order-1 lg:order-2">
         <video
           src={mascotVideo}
           className="h-full w-full lg:w-[90%] lg:h-[90%] object-contain"

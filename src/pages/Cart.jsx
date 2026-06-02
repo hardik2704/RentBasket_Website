@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartHeader from "@/components/cart/CartHeader";
@@ -5,11 +6,14 @@ import CartItemsList from "@/components/cart/CartItemsList";
 import OrderSummary from "@/components/cart/OrderSummary";
 import CrossSellStrip from "@/components/cart/CrossSellStrip";
 import StickyCheckoutBar from "@/components/cart/StickyCheckoutBar";
+import CheckoutContactModal from "@/components/cart/CheckoutContactModal";
 import { useCart } from "@/context/CartContext";
 
 const Cart = () => {
   const { cartItems } = useCart();
   const hasItems = cartItems.length > 0;
+  const [showCheckoutContact, setShowCheckoutContact] = useState(false);
+  const openCheckoutContact = () => setShowCheckoutContact(true);
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,7 +32,7 @@ const Cart = () => {
 
               {/* Right: Order Summary */}
               <div className="lg:col-span-1">
-                <OrderSummary />
+                <OrderSummary onCheckout={openCheckoutContact} />
               </div>
             </div>
           ) : (
@@ -37,7 +41,11 @@ const Cart = () => {
         </div>
       </main>
 
-      <StickyCheckoutBar />
+      <StickyCheckoutBar onCheckout={openCheckoutContact} />
+      <CheckoutContactModal
+        open={showCheckoutContact}
+        onClose={() => setShowCheckoutContact(false)}
+      />
       <Footer />
     </div>
   );

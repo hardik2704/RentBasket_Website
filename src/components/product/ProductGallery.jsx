@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ProductGallery = ({ product }) => {
@@ -27,9 +27,10 @@ const ProductGallery = ({ product }) => {
 
   return (
     <div className="space-y-4">
+      {/* TODO: Issue - Transparent images/SVGs are not rendering correctly in some layouts/themes (e.g. background issues). Benching to address later. */}
       {/* Hero Image */}
       <div
-        className="relative bg-gray-50 rounded-2xl overflow-hidden border border-border shadow-soft aspect-square md:aspect-[4/3]"
+        className="relative bg-white rounded-2xl overflow-hidden border border-border shadow-soft aspect-square md:aspect-[4/3]"
         onMouseEnter={() => setIsZoomed(true)}
         onMouseLeave={() => setIsZoomed(false)}
         onMouseMove={handleMouseMove}
@@ -64,7 +65,7 @@ const ProductGallery = ({ product }) => {
             style={
               isZoomed
                 ? {
-                    transform: "scale(1.5)",
+                    transform: "scale(1.12)",
                     transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
                     transition: "transform 0.1s ease-out",
                   }
@@ -84,7 +85,7 @@ const ProductGallery = ({ product }) => {
             <button
               key={i}
               onClick={() => setActiveIndex(i)}
-              className={`w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 overflow-hidden bg-gray-50 transition-all duration-200 flex-shrink-0 ${
+              className={`w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 overflow-hidden bg-white transition-all duration-200 flex-shrink-0 ${
                 activeIndex === i
                   ? "border-primary shadow-soft"
                   : "border-border hover:border-primary/40"
@@ -99,6 +100,7 @@ const ProductGallery = ({ product }) => {
           ))}
         </div>
       )}
+
     </div>
   );
 };

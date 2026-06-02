@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { ShieldCheck, Info, Tag, Bookmark, Truck, Wrench, CheckCircle } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Link } from "react-router-dom";
+import { cartBreakdown, lineOf } from "@/lib/pricing";
 
 const MONTHLY_KEYS = new Set([
   "1_month",
@@ -11,23 +13,20 @@ const MONTHLY_KEYS = new Set([
   "24_months",
   "36_months",
 ]);
-const COMBO_SURCHARGE = 50;
-
 const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
-  const { cartItems, getCartItemCount } = useCart();
+  const { cartItems, getCartItemCount, coupon, applyCoupon, removeCoupon } = useCart();
+  const [couponCode, setCouponCode] = useState(coupon?.code || "");
   
   if (cartItems.length === 0) return null;
 
   const itemCount = getCartItemCount();
-  const subtotalRent = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const totalDeposit = cartItems.reduce((sum, item) => sum + item.deposit, 0);
-  const totalSurcharge = cartItems.reduce((sum, item) => sum + (item.hasSurcharge ? COMBO_SURCHARGE * item.quantity : 0), 0);
-  
-  // For checkout, we'll assume a fixed 10% discount if they reached this far as a "Checkout Special" 
-  // or just use the same logic as Cart if we want to be strict.
-  // I'll stick to basic totals for now.
-  const grandTotal = subtotalRent + totalDeposit;
+  const b = cartBreakdown(cartItems, coupon);
   const hasMonthlyItems = cartItems.some((item) => MONTHLY_KEYS.has(item.duration));
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) return;
+    applyCoupon(couponCode);
+  };
 
   return (
     <div className="lg:sticky lg:top-24 space-y-5">
@@ -46,55 +45,76 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
         <div className="p-6 space-y-5">
           {/* Items Preview */}
           <div className="space-y-4">
-            {cartItems.map((item) => (
-              <div key={item.cartItemId} className="flex gap-3 pb-4 border-b border-border/30 last:border-0 last:pb-0">
-                <div className="w-14 h-14 bg-gray-50 rounded-lg border border-border/50 flex-shrink-0">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-contain p-1.5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-foreground line-clamp-1">{item.name}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
-                    {item.durationLabel} • {item.quantity} {item.quantity === 1 ? "Unit" : "Units"}
-                  </p>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-[11px] font-bold text-primary">₹{item.price.toLocaleString("en-IN")}/mo</span>
-                    {item.hasSurcharge && (
-                      <span className="text-[9px] text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded-full font-bold border border-primary/10">
-                        Combo Deal
+            {cartItems.map((item) => {
+              const line = lineOf(item);
+              return (
+                <div key={item.cartItemId} className="flex gap-3 pb-4 border-b border-border/30 last:border-0 last:pb-0">
+                  <div className="w-14 h-14 bg-white rounded-lg border border-border/50 flex-shrink-0">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-contain p-1.5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-foreground line-clamp-1">{item.name}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                      {item.durationLabel} • {item.quantity} {item.quantity === 1 ? "Unit" : "Units"}
+                    </p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-[11px] font-bold text-primary flex items-center gap-1">
+                        {line.listRentTotal > line.rentTotal && (
+                          <span className="line-through text-muted-foreground text-[9px]">₹{line.listRentTotal.toLocaleString("en-IN")}</span>
+                        )}
+                        <span>₹{line.rentTotal.toLocaleString("en-IN")}/mo</span>
                       </span>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Detailed Breakdown */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground font-medium">Monthly Rent</span>
-              <span className="font-bold">₹{subtotalRent.toLocaleString("en-IN")}/mo</span>
-            </div>
-            
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground font-medium">Security Deposit</span>
-              <span className="font-bold">₹{totalDeposit.toLocaleString("en-IN")}</span>
+              <span className="text-muted-foreground font-medium">Total Rent</span>
+              <span className="line-through text-muted-foreground text-xs">₹{b.totalRent.toLocaleString("en-IN")}/mo</span>
             </div>
 
-            {totalSurcharge > 0 && (
-              <div className="flex items-center justify-between text-sm text-primary/80 italic font-medium">
-                <span className="flex items-center gap-1.5">
-                  <Bookmark className="w-3.5 h-3.5" />
-                  Bundle Setup Fees
-                </span>
-                <span>+₹{totalSurcharge.toLocaleString("en-IN")}/mo</span>
+            {b.itemSavings > 0 && (
+              <div className="flex items-center justify-between text-sm text-success">
+                <span className="text-muted-foreground font-medium">Item Savings</span>
+                <span>−₹{b.itemSavings.toLocaleString("en-IN")}/mo</span>
               </div>
             )}
 
+            {b.coupon > 0 && (
+              <div className="flex items-center justify-between text-sm text-success font-semibold">
+                <span className="text-muted-foreground font-medium">Coupon Discount</span>
+                <span>−₹{b.coupon.toLocaleString("en-IN")}/mo</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-sm border-t border-border/30 pt-2 font-medium">
+              <span className="text-muted-foreground">Base Rent</span>
+              <span>₹{b.netBaseRent.toLocaleString("en-IN")}/mo</span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>GST (18%)</span>
+              <span>₹{b.gst.toLocaleString("en-IN")}/mo</span>
+            </div>
+
+            <div className="flex items-center justify-between text-sm font-bold border-t border-border/30 pt-2">
+              <span>Net Monthly Rent</span>
+              <span>₹{b.netMonthlyRent.toLocaleString("en-IN")}/mo</span>
+            </div>
+            
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground font-medium">Refundable Security</span>
+              <span className="font-bold">₹{b.security.toLocaleString("en-IN")}</span>
+            </div>
+
             <div className="pt-2 space-y-2 border-t border-border/50">
               {[
-                { label: "Delivery", icon: Truck },
-                { label: "Installation", icon: Wrench },
+                { label: "Delivery & Installation", icon: Truck },
               ].map(({ label, icon: Icon }) => (
                 <div key={label} className="flex items-center justify-between">
                   <span className="text-[11px] text-muted-foreground flex items-center gap-2 font-medium uppercase tracking-wider">
@@ -110,7 +130,7 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-muted-foreground flex items-center gap-2 font-medium uppercase tracking-wider">
                   <Wrench className="w-3 h-3" />
-                  Maintenance
+                  Maintenance & Support
                 </span>
                 <span className="text-[11px] font-bold text-success uppercase tracking-wider">Included</span>
               </div>
@@ -120,12 +140,15 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
           {/* Grand Total */}
           <div className="border-t-2 border-primary/10 pt-5 bg-primary/[0.01] -mx-6 px-6 pb-2">
             <div className="flex items-baseline justify-between mb-1">
-              <span className="text-base font-bold text-foreground">Total Due Today</span>
+              <span className="text-base font-bold text-foreground">Total (First Month)</span>
               <span className="text-2xl font-black text-primary tracking-tight">
-                ₹{grandTotal.toLocaleString("en-IN")}
+                ₹{b.netFirstMonth.toLocaleString("en-IN")}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-success bg-success-muted px-2.5 py-1.5 rounded-xl border border-success-border mt-3 shadow-sm">
+            <p className="text-[10px] md:text-xs text-muted-foreground mt-2 leading-relaxed text-right">
+              Pay <strong className="text-foreground">₹{b.upfront.toLocaleString("en-IN")}</strong> now (50%), rest on delivery.
+            </p>
+            <div className="flex items-center gap-1.5 text-success bg-success-muted px-2.5 py-1.5 rounded-xl border border-success-border mt-3 shadow-sm justify-center">
               <ShieldCheck className="w-4 h-4 flex-shrink-0" />
               <p className="text-[10px] font-bold leading-tight uppercase tracking-wider">
                 Full Security Deposit Refundable
@@ -135,17 +158,40 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
 
           {/* Coupon */}
           <div className="pt-4 border-t border-border/50">
-            <div className="relative group">
-              <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <input 
-                type="text" 
-                placeholder="PROMO10" 
-                className="w-full pl-10 pr-20 py-3 bg-secondary/40 border border-border rounded-xl text-sm font-bold placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-              />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors border border-primary/10">
-                Apply
-              </button>
-            </div>
+            {coupon ? (
+              <div className="flex items-center justify-between bg-success-muted border border-success-border rounded-xl px-4 py-2.5">
+                <div className="flex items-center gap-2 text-success-muted-foreground text-sm font-medium">
+                  <Tag className="w-4 h-4" />
+                  {coupon.code} applied
+                </div>
+                <button
+                  onClick={() => {
+                    removeCoupon();
+                    setCouponCode("");
+                  }}
+                  className="text-xs text-red-500 hover:underline font-medium"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  placeholder="Enter coupon code" 
+                  className="flex-1 px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background"
+                  onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                />
+                <button 
+                  onClick={handleApplyCoupon}
+                  className="px-4 py-2.5 rounded-xl border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+            )}
           </div>
 
           {/* CTA */}

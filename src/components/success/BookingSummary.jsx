@@ -3,7 +3,22 @@ import { ShieldCheck, Truck, Wrench, Bookmark, MapPin, CreditCard, User } from "
 const BookingSummary = ({ orderData }) => {
   if (!orderData || !orderData.items) return null;
 
-  const { items, subtotalRent, totalDeposit, totalSurcharge, grandTotal, customerDetails, deliveryAddress, paymentDetails } = orderData;
+  const {
+    items,
+    totalRent,
+    itemSavings,
+    coupon,
+    baseRent,
+    gst,
+    netMonthlyRent,
+    security,
+    netFirstMonth,
+    upfront,
+    payOnDelivery,
+    customerDetails,
+    deliveryAddress,
+    paymentDetails
+  } = orderData;
 
   return (
     <div className="w-full bg-card border border-border rounded-2xl shadow-xl overflow-hidden mb-8">
@@ -20,7 +35,7 @@ const BookingSummary = ({ orderData }) => {
         <div className="space-y-4">
           {items.map((item, idx) => (
             <div key={idx} className="flex gap-4 pb-4 border-b border-border/30 last:border-0 last:pb-0">
-              <div className="w-16 h-16 bg-gray-50 rounded-xl border border-border/50 flex-shrink-0 p-1.5">
+              <div className="w-16 h-16 bg-white rounded-xl border border-border/50 flex-shrink-0 p-1.5">
                 <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 min-w-0">
@@ -34,11 +49,6 @@ const BookingSummary = ({ orderData }) => {
                 </div>
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-sm font-black text-primary">₹{item.price.toLocaleString("en-IN")}/mo</span>
-                  {item.hasSurcharge && (
-                    <span className="text-[9px] text-primary/70 bg-primary/5 px-2 py-0.5 rounded-full font-bold border border-primary/10 uppercase tracking-widest">
-                      Combo Deal
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
@@ -48,27 +58,48 @@ const BookingSummary = ({ orderData }) => {
         {/* Pricing Breakdown */}
         <div className="bg-secondary/20 rounded-2xl p-5 space-y-3 border border-border/50">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground font-medium">Subtotal Rent</span>
-            <span className="font-bold">₹{subtotalRent.toLocaleString("en-IN")}/mo</span>
-          </div>
-          
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-              Security Deposit
-              <ShieldCheck className="w-3.5 h-3.5 text-success" />
+            <span className="text-muted-foreground font-medium">Total Rent</span>
+            <span className="line-through text-muted-foreground text-xs">
+              ₹{(totalRent || baseRent || 0).toLocaleString("en-IN")}/mo
             </span>
-            <span className="font-bold">₹{totalDeposit.toLocaleString("en-IN")}</span>
           </div>
 
-          {totalSurcharge > 0 && (
-            <div className="flex items-center justify-between text-sm text-primary/80 italic font-medium">
-              <span className="flex items-center gap-1.5">
-                <Bookmark className="w-3.5 h-3.5" />
-                Bundle Setup Fees
-              </span>
-              <span>+₹{totalSurcharge.toLocaleString("en-IN")}/mo</span>
+          {(itemSavings > 0) && (
+            <div className="flex items-center justify-between text-sm text-success">
+              <span className="font-medium">Item Savings</span>
+              <span>−₹{itemSavings.toLocaleString("en-IN")}/mo</span>
             </div>
           )}
+
+          {(coupon > 0) && (
+            <div className="flex items-center justify-between text-sm text-success font-semibold">
+              <span className="font-medium">Coupon Discount</span>
+              <span>−₹{coupon.toLocaleString("en-IN")}/mo</span>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between text-sm border-t border-border/30 pt-2 font-medium">
+            <span className="text-muted-foreground">Base Rent</span>
+            <span className="font-bold">₹{(baseRent || 0).toLocaleString("en-IN")}/mo</span>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>GST (18%)</span>
+            <span>₹{(gst || 0).toLocaleString("en-IN")}/mo</span>
+          </div>
+
+          <div className="flex items-center justify-between text-sm font-bold border-t border-border/30 pt-2">
+            <span>Net Monthly Rent</span>
+            <span>₹{(netMonthlyRent || 0).toLocaleString("en-IN")}/mo</span>
+          </div>
+
+          <div className="flex items-center justify-between text-sm border-t border-border/30 pt-2">
+            <span className="text-muted-foreground font-medium flex items-center gap-1.5">
+              Refundable Security
+              <ShieldCheck className="w-3.5 h-3.5 text-success" />
+            </span>
+            <span className="font-bold">₹{(security || 0).toLocaleString("en-IN")}</span>
+          </div>
 
           <div className="pt-3 space-y-2 border-t border-border/50">
             <div className="flex items-center justify-between">
@@ -85,15 +116,15 @@ const BookingSummary = ({ orderData }) => {
             </div>
           </div>
 
-          <div className="border-t-2 border-primary/10 pt-4 mt-2">
+          <div className="border-t-2 border-primary/10 pt-4 mt-2 bg-primary/[0.01] -mx-5 px-5 pb-2 rounded-b-xl">
             <div className="flex items-baseline justify-between mb-1">
-              <span className="text-base font-bold text-foreground">Total Paid Today</span>
+              <span className="text-base font-bold text-foreground">Total (First Month)</span>
               <span className="text-xl font-black text-primary tracking-tight">
-                ₹{grandTotal.toLocaleString("en-IN")}
+                ₹{(netFirstMonth || 0).toLocaleString("en-IN")}
               </span>
             </div>
-            <p className="text-[10px] text-muted-foreground text-right font-medium">
-              *Security deposit is 100% refundable upon return.
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              Paid <strong className="text-foreground">₹{(upfront || 0).toLocaleString("en-IN")}</strong> upfront (50%), remaining <strong className="text-foreground">₹{(payOnDelivery || 0).toLocaleString("en-IN")}</strong> due on delivery.
             </p>
           </div>
         </div>

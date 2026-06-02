@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ShieldCheck, Truck, Clock } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { cartBreakdown } from "@/lib/pricing";
 import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import CheckoutProgress from "@/components/checkout/CheckoutProgress";
 import CheckoutForm from "@/components/checkout/CheckoutForm";
@@ -10,7 +11,7 @@ import CheckoutPayment from "@/components/checkout/CheckoutPayment";
 import CheckoutSummary from "@/components/checkout/CheckoutSummary";
 
 const Checkout = () => {
-  const { cartItems, clearCart } = useCart();
+  const { cartItems, clearCart, coupon } = useCart();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -54,10 +55,8 @@ const Checkout = () => {
     // Simulate API call
     setTimeout(() => {
       setIsProcessing(false);
-      // Build the order data payload
-      const subtotalRent = cartItems.reduce((sum, item) => sum + (item.price - (item.isBrandNew ? 65 : 0)) * item.quantity, 0);
-      const totalDeposit = cartItems.reduce((sum, item) => sum + item.deposit, 0);
-      const totalSurcharge = cartItems.reduce((sum, item) => sum + (item.isBrandNew ? 65 * item.quantity : 0), 0);
+      // Build the order data payload using the new pricing breakdown
+      const b = cartBreakdown(cartItems, coupon);
       
       const orderPayload = {
         orderId: `RB-${Math.floor(Math.random() * 90000) + 10000}`,
@@ -76,10 +75,17 @@ const Checkout = () => {
           status: "Successful"
         },
         items: cartItems,
-        subtotalRent,
-        totalDeposit,
-        totalSurcharge,
-        grandTotal: subtotalRent + totalDeposit + totalSurcharge
+        totalRent: b.totalRent,
+        itemSavings: b.itemSavings,
+        coupon: b.coupon,
+        baseRent: b.netBaseRent,
+        gst: b.gst,
+        netMonthlyRent: b.netMonthlyRent,
+        security: b.security,
+        netFirstMonth: b.netFirstMonth,
+        upfront: b.upfront,
+        payOnDelivery: b.payOnDelivery,
+        grandTotal: b.netFirstMonth // legacy fallback
       };
 
       clearCart();

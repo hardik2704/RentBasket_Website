@@ -1,4 +1,5 @@
 import { MapPin, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 import logo from "@/assets/7 1.png";
 
 const Footer = () => {
@@ -9,66 +10,80 @@ const Footer = () => {
 
       <div className="section-container pt-2 pb-8">
         {/* Brand */}
-        <div className="mb-10">
+        <div className="mb-10 text-center">
           <h3 className="font-bold text-lg mb-1 font-sans">RentBasket</h3>
           <p className="text-sm text-muted-foreground font-sans leading-relaxed">
             Comfort for your home,<br />without the hassle of ownership.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-8 max-w-lg">
+        <div className="grid grid-cols-2 gap-8 w-full">
+          {/* Quick Links & Policies */}
           <div className="space-y-6">
-            {/* Quick Links */}
             <div>
               <h4 className="font-bold text-sm mb-4 font-sans">Quick Links</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/catalog"
                     className="hover:text-primary transition-colors font-sans"
                   >
                     Browse Products
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
-                    className="hover:text-primary transition-colors font-sans"
-                  >
-                    Combo Deals
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="hover:text-primary transition-colors font-sans"
-                  >
-                    How It Works
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/about"
                     className="hover:text-primary transition-colors font-sans"
                   >
                     About Us
-                  </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/faqs"
+                    className="hover:text-primary transition-colors font-sans"
+                  >
+                    FAQs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/terms-n-conditions"
+                    className="hover:text-primary transition-colors font-sans"
+                  >
+                    Terms &amp; Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/shipping-returns"
+                    className="hover:text-primary transition-colors font-sans"
+                  >
+                    Shipping &amp; Returns
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contact"
+                    className="hover:text-primary transition-colors font-sans"
+                  >
+                    Contact Us
+                  </Link>
                 </li>
               </ul>
             </div>
           </div>
 
           {/* Office Locations */}
-          <div className="space-y-6">
+          <div className="space-y-6 ml-auto w-fit">
             {/* Gurgaon */}
             <div>
               <h4 className="font-bold text-sm mb-2 font-sans">
                 Gurgaon Office
               </h4>
               <div className="text-sm text-muted-foreground space-y-2">
-                <a
-                  href="https://www.rentbasket.com/locations"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/contact"
                   className="flex items-start gap-2 hover:text-primary transition-colors group"
                 >
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 group-hover:text-primary" />
@@ -77,7 +92,7 @@ const Footer = () => {
                     Ardee City, Sector 52,<br />
                     Gurugram, Haryana 122003
                   </span>
-                </a>
+                </Link>
                 <a
                   href="tel:+919958858473"
                   className="flex items-center gap-2 hover:text-primary transition-colors"
@@ -92,10 +107,8 @@ const Footer = () => {
             <div>
               <h4 className="font-bold text-sm mb-2 font-sans">Noida Office</h4>
               <div className="text-sm text-muted-foreground space-y-2">
-                <a
-                  href="https://www.rentbasket.com/locations"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/contact"
                   className="flex items-start gap-2 hover:text-primary transition-colors group"
                 >
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 group-hover:text-primary" />
@@ -104,7 +117,7 @@ const Footer = () => {
                     Sector 116, Noida,<br />
                     UP 201301
                   </span>
-                </a>
+                </Link>
                 <a
                   href="tel:+919958004438"
                   className="flex items-center gap-2 hover:text-primary transition-colors"

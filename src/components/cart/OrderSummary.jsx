@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { CheckCircle, Tag, ShieldCheck, Lock, Truck, Wrench, CreditCard, Bookmark, Sparkles } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { cartBreakdown, lineOf } from "@/lib/pricing";
 
 const MONTHLY_KEYS = new Set([
   "1_month",
@@ -14,42 +15,22 @@ const MONTHLY_KEYS = new Set([
   "36_months",
 ]);
 
-const OrderSummary = () => {
-  const { cartItems, getCartItemCount } = useCart();
-  const navigate = useNavigate();
-  const [couponCode, setCouponCode] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
+const OrderSummary = ({ onCheckout }) => {
+  const { cartItems, getCartItemCount, coupon, applyCoupon, removeCoupon } = useCart();
+  const [couponCode, setCouponCode] = useState(coupon?.code || "");
 
   const itemCount = getCartItemCount();
-
-  // Calculate totals - explicitly separate base rent and new product surcharges
-  const subtotalRent = cartItems.reduce(
-    (sum, item) => sum + (item.price - (item.isBrandNew ? 65 : 0)) * item.quantity,
-    0
-  );
-  
-  const totalSurcharge = cartItems.reduce(
-    (sum, item) => sum + (item.isBrandNew ? 65 * item.quantity : 0),
-    0
-  );
-  
-  const totalDeposit = cartItems.reduce(
-    (sum, item) => sum + item.deposit,
-    0
-  );
-  
-  const discount = couponApplied ? Math.round(subtotalRent * 0.1) : 0;
-  const grandTotal = subtotalRent + totalSurcharge - discount + totalDeposit;
-
+  const b = cartBreakdown(cartItems, coupon);
   const hasMonthlyItems = cartItems.some((item) => MONTHLY_KEYS.has(item.duration));
 
   const handleApplyCoupon = () => {
-    if (couponCode.trim().toUpperCase() === "RENTBASKET10") {
-      setCouponApplied(true);
+    if (!couponCode.trim()) return;
+    const success = applyCoupon(couponCode);
+    if (success) {
       toast.success("Coupon applied!", {
         description: "10% discount on rental subtotal",
       });
-    } else if (couponCode.trim()) {
+    } else {
       toast.error("Invalid coupon code", {
         description: "Try RENTBASKET10 for 10% off",
       });
@@ -57,7 +38,7 @@ const OrderSummary = () => {
   };
 
   const handleRemoveCoupon = () => {
-    setCouponApplied(false);
+    removeCoupon();
     setCouponCode("");
   };
 
@@ -81,65 +62,75 @@ const OrderSummary = () => {
         <div className="space-y-2">
           {cartItems.map((item) => {
             const isM = MONTHLY_KEYS.has(item.duration);
+            const line = lineOf(item);
             return (
               <div key={item.cartItemId} className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground truncate max-w-[60%]">
                   {item.name} {item.quantity > 1 && `×${item.quantity}`}
                 </span>
-                <span className="font-medium whitespace-nowrap">
-                  ₹{(item.price * item.quantity).toLocaleString("en-IN")}{isM && "/mo"}
+                <span className="font-medium whitespace-nowrap flex items-center gap-1">
+                  {line.listRentTotal > line.rentTotal && (
+                    <span className="line-through text-muted-foreground text-[10px]">₹{line.listRentTotal.toLocaleString("en-IN")}</span>
+                  )}
+                  <span>₹{line.rentTotal.toLocaleString("en-IN")}{isM && "/mo"}</span>
                 </span>
               </div>
             );
           })}
         </div>
-
         <div className="border-t border-border/50 pt-3 space-y-2.5">
-          {/* Subtotal */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Subtotal Rent</span>
-            <span className="text-sm font-semibold">
-              ₹{subtotalRent.toLocaleString("en-IN")}
-              {hasMonthlyItems && <span className="text-xs text-muted-foreground font-normal">/mo</span>}
+          {/* Total Rent (list total) */}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Total Rent</span>
+            <span className="line-through text-muted-foreground text-xs">
+              ₹{b.totalRent.toLocaleString("en-IN")}/mo
             </span>
           </div>
 
-          {/* Deposit */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Security Deposit</span>
-            <span className="text-sm font-medium">₹{totalDeposit.toLocaleString("en-IN")}</span>
+          {/* Savings */}
+          {b.itemSavings > 0 && (
+            <div className="flex items-center justify-between text-sm text-success">
+              <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Item Savings</span>
+              <span>−₹{b.itemSavings.toLocaleString("en-IN")}/mo</span>
+            </div>
+          )}
+
+          {/* Coupon discount */}
+          {b.coupon > 0 && (
+            <div className="flex items-center justify-between text-sm text-success font-semibold">
+              <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Coupon Discount</span>
+              <span>−₹{b.coupon.toLocaleString("en-IN")}/mo</span>
+            </div>
+          )}
+
+          {/* Base Rent */}
+          <div className="flex items-center justify-between text-sm border-t border-border/30 pt-2 font-medium">
+             <span className="text-muted-foreground">Base Rent</span>
+             <span>₹{b.netBaseRent.toLocaleString("en-IN")}/mo</span>
           </div>
 
-          {/* Brand New Surcharges */}
-          {totalSurcharge > 0 && (
-            <div className="flex items-center justify-between text-primary/80">
-              <span className="text-sm flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" />
-                Brand New Upgrade
-              </span>
-              <span className="text-sm font-medium">
-                ₹{totalSurcharge.toLocaleString("en-IN")}
-                {hasMonthlyItems && <span className="text-xs font-normal">/mo</span>}
-              </span>
-            </div>
-          )}
+          {/* GST */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>GST (18%)</span>
+            <span>₹{b.gst.toLocaleString("en-IN")}/mo</span>
+          </div>
 
-          {/* Discount */}
-          {couponApplied && (
-            <div className="flex items-center justify-between text-success">
-              <span className="text-sm flex items-center gap-1">
-                <Tag className="w-3.5 h-3.5" />
-                Coupon Discount
-              </span>
-              <span className="text-sm font-semibold">−₹{discount.toLocaleString("en-IN")}</span>
-            </div>
-          )}
+          {/* Net Monthly Rent */}
+          <div className="flex items-center justify-between text-sm font-bold border-t border-border/30 pt-2">
+            <span>Net Monthly Rent</span>
+            <span>₹{b.netMonthlyRent.toLocaleString("en-IN")}/mo</span>
+          </div>
+
+          {/* Deposit */}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Refundable Security</span>
+            <span className="font-semibold">₹{b.security.toLocaleString("en-IN")}</span>
+          </div>
 
           {/* Free services */}
           <div className="border-t border-border/50 pt-2.5 space-y-1.5">
             {[
-              { label: "Delivery", icon: Truck },
-              { label: "Installation", icon: Wrench },
+              { label: "Delivery & Installation", icon: Truck },
             ].map(({ label, icon: Icon }) => (
               <div key={label} className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground flex items-center gap-1.5">
@@ -155,7 +146,7 @@ const OrderSummary = () => {
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <Wrench className="w-3.5 h-3.5" />
-                Maintenance
+                Maintenance & Support
               </span>
               <span className="inline-flex items-center gap-1 text-sm font-medium text-success">
                 <CheckCircle className="w-3.5 h-3.5" />
@@ -166,27 +157,26 @@ const OrderSummary = () => {
         </div>
 
         {/* Grand Total */}
-        <div className="border-t-2 border-primary/20 pt-4">
-          <div className="flex items-baseline justify-between">
-            <span className="text-base font-bold">Grand Total Due Now</span>
-            <span className="text-2xl font-bold text-primary">
-              ₹{grandTotal.toLocaleString("en-IN")}
+        <div className="border-t-2 border-primary/20 pt-4 bg-primary/[0.01] -mx-5 px-5 pb-2">
+          <div className="flex items-baseline justify-between mb-1">
+            <span className="text-base font-bold">Total (First Month)</span>
+            <span className="text-2xl font-black text-primary tracking-tight">
+              ₹{b.netFirstMonth.toLocaleString("en-IN")}
             </span>
           </div>
-          <p className="text-[10px] md:text-xs text-muted-foreground mt-1.5 flex items-start gap-1">
-            <ShieldCheck className="w-3 h-3 mt-0.5 flex-shrink-0 text-success" />
-            Security deposit is fully refundable as per rental terms.
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-2 leading-relaxed">
+            Pay <strong className="text-foreground">₹{b.upfront.toLocaleString("en-IN")}</strong> now (50%), and <strong className="text-foreground">₹{b.payOnDelivery.toLocaleString("en-IN")}</strong> on delivery.
           </p>
         </div>
 
         {/* Coupon Input */}
         <div className="pt-4 border-t border-border/50">
           <p className="text-xs font-medium text-muted-foreground mb-2">Have a coupon?</p>
-          {couponApplied ? (
+          {coupon ? (
             <div className="flex items-center justify-between bg-success-muted border border-success-border rounded-xl px-4 py-2.5">
               <div className="flex items-center gap-2 text-success-muted-foreground text-sm font-medium">
                 <Tag className="w-4 h-4" />
-                RENTBASKET10 applied
+                {coupon.code} applied
               </div>
               <button
                 onClick={handleRemoveCoupon}
@@ -219,10 +209,7 @@ const OrderSummary = () => {
         <div className="space-y-2.5 pt-2">
           <button
             className="btn-gradient-coral w-full py-3.5 text-base font-semibold flex items-center justify-center gap-2"
-            onClick={() => {
-              toast.success("Proceeding to checkout...");
-              navigate("/checkout");
-            }}
+            onClick={onCheckout}
           >
             <Lock className="w-4 h-4" />
             Proceed to Checkout

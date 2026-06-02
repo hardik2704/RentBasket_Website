@@ -35,6 +35,12 @@ const Header = () => {
             >
               Browse Catalogue
             </Link>
+            <Link
+              to="/faqs"
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              FAQs
+            </Link>
             <div className="relative">
               <input
                 type="text"

@@ -1,4 +1,10 @@
-import { Star, CheckCircle, MapPin, Shield } from "lucide-react";
+import { Star, CheckCircle, XCircle, MapPin, Shield } from "lucide-react";
+
+const STOCK_STATUS = {
+  in_stock: { label: "In Stock", Icon: CheckCircle, className: "text-success" },
+  limited: { label: "Limited Stock", Icon: CheckCircle, className: "text-amber-500" },
+  out_of_stock: { label: "Out of Stock", Icon: XCircle, className: "text-muted-foreground" },
+};
 
 const ProductInfo = ({ product }) => {
   return (
@@ -39,10 +45,16 @@ const ProductInfo = ({ product }) => {
 
       {/* Availability & Location */}
       <div className="flex items-center gap-4 flex-wrap">
-        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
-          <CheckCircle className="w-4 h-4" />
-          In Stock
-        </span>
+        {(() => {
+          const { label, Icon, className } =
+            STOCK_STATUS[product.stock_status] ?? STOCK_STATUS.in_stock;
+          return (
+            <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${className}`}>
+              <Icon className="w-4 h-4" />
+              {label}
+            </span>
+          );
+        })()}
         <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
           <MapPin className="w-3.5 h-3.5 text-primary" />
           Available in Delhi NCR
