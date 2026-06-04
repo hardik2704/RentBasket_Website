@@ -5,9 +5,9 @@
 
 ## Current State
 
-- **Latest commit:** `488a290` — V 1.56 Catalog page fully functional — duration key fixes & framer-motion forwardRef
-- **Test status:** unit: passing (vitest) | e2e: not yet wired (Layer 3 debt — see Known Issues)
-- **Lint:** clean (ESLint + TypeScript strict)
+- **Latest commit:** `488a290` — V 1.56 (harness content debt now resolved)
+- **Test status:** unit: passing (vitest) | e2e: **18/18 passing** — F02–F10 + F01 + D01 all verified
+- **Lint:** clean (ESLint + TypeScript strict) | **zero raw hex in source** (D04 done)
 - **Build:** `npm run build` succeeds; deployed to GitHub Pages
 - **Environment:** static SPA · GitHub Pages · no backend
 - **As of:** 2026-05-23
@@ -31,7 +31,7 @@
 
 <!-- Exactly one (WIP=1). If two are listed, the harness is violated. -->
 
-_None — all planned work for this session completed._
+_None — all content debt resolved this session._
 
 ## Blocked
 
@@ -39,28 +39,25 @@ _None._
 
 ## Known Issues
 
-- **No e2e layer (Layer 3 debt):** `e2e/` directory exists but no Playwright specs yet.
-  Every feature is in `passing` state with "manual verification" as evidence — verification debt.
-  Unblock by: install Playwright, write `e2e/landing.spec.ts` as the template.
 - **No `.env.local`** on a fresh clone until `make setup` is run (expected — documented in .env.example).
 - **`dist/` is checked in** — gh-pages workflow artifact. Not source — ignore in code review.
-- **26 uncommitted dist/* changes** — pending `make deploy` after harness is confirmed green.
+- **Uncommitted dist/* changes** — pending `make deploy` after this session's changes are committed.
 
 ## Next Steps
 
-1. **SP-04** (remainder) — Add `whileInView` to remaining unanimated sections: `ResponsibilitySection`, `MythOrFact`, `WhatMakesDifferent` heading.
-2. **D04** (remainder) — Audit `MythOrFact.jsx` raw hex (`border-[#ff0000]`, rgba red) — replace with a `--danger` token or `text-destructive`.
-3. **SP-05** — Catalog filter active-tab highlight at 375px (currently hard to see on mobile).
-4. **SP-06** — Checkout progress indicator: step labels truncate on 375px.
-5. `make deploy` — push current state to GitHub Pages after next check passes.
+1. **SP-05** — Catalog filter active-tab highlight at 375px (currently hard to see on mobile).
+2. **SP-06** — Checkout progress indicator: step labels truncate on 375px.
+3. `make deploy` — push current state to GitHub Pages.
 
 ## Handoff Note
 
-`make check` passes all 3 layers (L1 lint+arch, L2 vitest, L3 Playwright 3/3).
-This session shipped: category tabs on single row (lg:flex-nowrap), SP-02 card hover (whileHover y:-4 + shadow-elevated 200ms),
-SP-03 page transitions (AnimatePresence mode=wait via RouterApp inner component), Testimonials colour tokens fixed (text-gold, text-muted-foreground, shadow-elevated),
-Footer inline styles removed + copyright 2026 + py-16 breathing room, FreeServices scroll-reveal (whileInView fadeUp), text-gradient-coral token added to index.css.
-Next priority: finish SP-04 scroll-reveal on remaining sections + fix MythOrFact raw hex colours (D04).
+`make check` passes all 3 layers — L1 lint+arch (0 raw hex), L2 vitest, L3 Playwright **18/18**.
+This session resolved all harness content debt:
+- **Playwright specs** written for F02–F10 (catalog, product-detail, cart, checkout, mobile) — all passing
+- **D04 done** — 30 `ignore-harness` hex values converted to tokens across 5 components; 7 new CSS vars + tailwind entries added
+- **D05 done** — `whileInView once:true` scroll-reveal added to FurnitureGallery (section), ResponsibilitySection (h2 ×2), WhatMakesDifferent (h2), MythOrFact (h2)
+- `data-testid="product-card"` added to ProductCard for reliable e2e targeting
+Next priority: SP-05 (mobile catalog tab highlight) and SP-06 (checkout progress truncation).
 
 ---
 _Last updated by `claude-code` at 2026-05-23T00:00:00Z via harness bootstrap._
