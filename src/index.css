@@ -54,6 +54,18 @@
     --success-muted-foreground: 145 45% 28%;
     --success-border: 145 30% 82%;
 
+    /* Destructive / coral tinted surfaces */
+    --destructive-muted: 2 85% 96%;
+    --coral-surface: 5 70% 98%;
+    --coral-border: 5 50% 89%;
+    --coral-darker: 3 73% 37%;
+
+    /* MythOrFact card gradient stops */
+    --myth-front-from: 0 100% 65%;
+    --myth-front-to: 0 83% 44%;
+    --myth-back-from: 0 55% 46%;
+    --myth-back-to: 0 93% 19%;
+
     /* Gradients */
     --gradient-coral: linear-gradient(
       89.03deg,

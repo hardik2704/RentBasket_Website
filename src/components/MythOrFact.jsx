@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 
 // Subtle inset border — works for both BELIEF and REALITY faces.
 const InnerBorder = () => (
@@ -29,7 +30,7 @@ const Card = ({ belief, reality }) => {
       >
         {/* FRONT SIDE */}
         <div
-          className="absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-br from-[#ff4d4d] to-[#d01111] p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-center shadow-lg border border-white/20 overflow-hidden" // ignore-harness — design-sprint debt, tracked in review-promotions.md
+          className="absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-br from-myth-front-from to-myth-front-to p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-center shadow-lg border border-white/20 overflow-hidden"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
@@ -49,7 +50,7 @@ const Card = ({ belief, reality }) => {
 
         {/* BACK SIDE */}
         <div
-          className="absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-b from-[#ba3737] to-[#610303] p-4 sm:p-6 md:p-7 flex flex-col items-center justify-start shadow-2xl border border-white/10 overflow-hidden" // ignore-harness — design-sprint debt, tracked in review-promotions.md
+          className="absolute inset-0 h-full w-full rounded-2xl bg-gradient-to-b from-myth-back-from to-myth-back-to p-4 sm:p-6 md:p-7 flex flex-col items-center justify-start shadow-2xl border border-white/10 overflow-hidden"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
@@ -108,10 +109,15 @@ const MythOrFact = () => {
   return (
     <section className="bg-background pt-4 md:pt-6 pb-8 md:pb-10 px-4 md:px-6">
       <div className="text-center mb-6 md:mb-8">
-        {/* Responsive Section Header */}
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-4">
+        <motion.h2
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           Belief or Reality?
-        </h2>
+        </motion.h2>
         <p className="text-muted-foreground text-sm md:text-lg">
           Let's bust some Myths!
         </p>

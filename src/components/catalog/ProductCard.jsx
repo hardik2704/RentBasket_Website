@@ -1,33 +1,26 @@
 import { forwardRef, useState } from "react";
-import { Star, Heart } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { DURATION_OPTIONS } from "@/data/products";
+
+// Badge style per tag type
+const TAG_STYLES = {
+  "Bestseller":      "bg-amber-100 text-amber-800 border border-amber-200",
+  "Family pick":     "bg-teal-100 text-teal-700 border border-teal-200",
+  "New arrival":     "bg-emerald-100 text-emerald-700 border border-emerald-200",
+  "Event-ready":     "bg-violet-100 text-violet-700 border border-violet-200",
+  "Complete setups": "bg-blue-100 text-blue-700 border border-blue-200",
+  "Flexible plans":  "bg-sky-100 text-sky-700 border border-sky-200",
+};
+const DEFAULT_TAG_STYLE = "bg-primary/10 text-primary border border-primary/20";
 
 const ProductCard = forwardRef(({ product }, ref) => {
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showPricingLadder, setShowPricingLadder] = useState(false);
   const navigate = useNavigate();
 
   const pricing = product.pricing_by_duration;
-  const lowestDaily = pricing["7_days"];
-  const lowestMonthly = pricing["12_months"];
-
-  // Duration chip preview (show 5 key durations)
-  const previewDurations = ["7_days", "1_month", "3_months", "6_months", "12_months"];
-  const previewChips = DURATION_OPTIONS.filter((d) =>
-    previewDurations.includes(d.key)
-  );
-
-  // Pricing ladder for hover tooltip
-  const pricingLadder = [
-    { label: "7 Days", price: pricing["7_days"], suffix: "" },
-    { label: "1 Month", price: pricing["1_month"], suffix: "/mo" },
-    { label: "6 Months", price: pricing["6_months"], suffix: "/mo" },
-    { label: "12 Months", price: pricing["12_months"], suffix: "/mo" },
-  ];
-
-  const primaryTag = product.tags?.[0];
+  const monthlyPrice = pricing?.["12_months"];
+  const tags = product.tags ?? [];
 
   return (
     <motion.div
@@ -38,138 +31,77 @@ const ProductCard = forwardRef(({ product }, ref) => {
       exit={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.3 }}
       whileHover={{ y: -4, transition: { duration: 0.2, ease: "easeOut" } }}
-      className="group bg-card border border-border rounded-2xl overflow-hidden shadow-soft hover:shadow-elevated transition-shadow duration-200"
-      onMouseEnter={() => setShowPricingLadder(true)}
-      onMouseLeave={() => setShowPricingLadder(false)}
+      data-testid="product-card"
+      className="group bg-card border border-border rounded-2xl overflow-hidden shadow-soft hover:shadow-elevated hover:border-primary/25 transition-all duration-200 cursor-pointer"
+      onClick={() => navigate(`/product/${product.id}`)}
     >
-      {/* Image Area */}
-      <div className="relative aspect-[4/3] bg-gray-50 overflow-hidden">
+      {/* Image area */}
+      <div className="relative aspect-[4/3] bg-cream overflow-hidden">
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-contain p-5 group-hover:scale-105 transition-transform duration-500"
         />
 
-        {/* Badge */}
-        {primaryTag && (
-          <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[10px] md:text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
-            {primaryTag}
-          </span>
-        )}
+        {/* Badges — top-left, stacked */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+          {tags.slice(0, 2).map((tag) => (
+            <span
+              key={tag}
+              className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full shadow-sm ${
+                TAG_STYLES[tag] ?? DEFAULT_TAG_STYLE
+              }`}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
 
-        {/* Favorite Icon */}
+        {/* Favourite — 44×44 touch target */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             setIsFavorite(!isFavorite);
           }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
+          aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
+          className="absolute top-2 right-2 w-11 h-11 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white hover:scale-110 active:scale-95 transition-all duration-150"
         >
           <Heart
-            className={`w-4 h-4 transition-colors ${
-              isFavorite
-                ? "fill-primary text-primary"
-                : "text-muted-foreground"
+            className={`w-4 h-4 transition-colors duration-200 ${
+              isFavorite ? "fill-rose-500 text-rose-500" : "text-muted-foreground"
             }`}
           />
         </button>
-
-        {/* Hover Pricing Ladder */}
-        <AnimatePresence>
-          {showPricingLadder && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.2 }}
-              className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-4 pt-8 hidden md:block"
-            >
-              <div className="grid grid-cols-5 gap-1">
-                {pricingLadder.map((item) => (
-                  <div key={item.label} className="text-center">
-                    <div className="text-[10px] text-white/70 mb-0.5">
-                      {item.label}
-                    </div>
-                    <div className="text-xs text-white font-semibold">
-                      ₹{item.price.toLocaleString("en-IN")}
-                      <span className="text-[9px] font-normal">
-                        {item.suffix}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      {/* Card Content */}
+      {/* Card content */}
       <div className="p-4">
-        {/* Title */}
-        <h3 className="font-semibold text-sm md:text-base text-foreground leading-snug mb-1 line-clamp-1">
+        {/* Name */}
+        <h3 className="font-semibold text-sm md:text-base text-foreground leading-snug mb-1 line-clamp-2">
           {product.name}
         </h3>
 
         {/* Description */}
-        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed mb-2.5 line-clamp-1">
+        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-1">
           {product.short_description}
         </p>
 
-        {/* Rating */}
-        <div className="flex items-center gap-1.5 mb-3">
-          <div className="flex items-center gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-3 h-3 ${
-                  i < Math.floor(product.rating)
-                    ? "fill-gold text-gold"
-                    : "text-gray-200"
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-muted-foreground font-medium">
-            {product.rating}
+        {/* Price — 12-month plan only */}
+        <div className="flex items-baseline gap-1 mb-4">
+          <span className="text-xl font-bold text-primary">
+            ₹{monthlyPrice?.toLocaleString("en-IN") ?? "—"}
           </span>
-        </div>
-
-        {/* Pricing Preview */}
-        <div className="bg-secondary/60 rounded-xl p-3 mb-3">
-          <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider font-medium">
-            Price varies by duration
-          </p>
-          <div className="flex items-baseline gap-2 md:group-hover:hidden">
-            <span className="text-lg md:text-xl font-bold text-primary">
-              ₹{lowestDaily.toLocaleString("en-IN")}
-            </span>
-            <span className="text-xs text-muted-foreground">/day</span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            or ₹{lowestMonthly.toLocaleString("en-IN")}/month (12M plan)
-          </p>
-        </div>
-
-        {/* Duration Chips */}
-        <div
-          className="flex gap-1.5 mb-4 overflow-x-auto"
-          style={{ scrollbarWidth: "none" }}
-        >
-          {previewChips.map((d) => (
-            <span
-              key={d.key}
-              className="text-[10px] md:text-xs px-2 py-0.5 rounded-full border border-border text-muted-foreground whitespace-nowrap flex-shrink-0"
-            >
-              {d.short}
-            </span>
-          ))}
+          <span className="text-sm text-muted-foreground font-medium">/mo</span>
+          <span className="text-xs text-muted-foreground/60 ml-0.5">· 12-month plan</span>
         </div>
 
         {/* CTA */}
         <button
-          onClick={() => navigate(`/product/${product.id}`)}
-          className="w-full btn-outline text-sm py-2.5 hover:bg-primary hover:text-primary-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/product/${product.id}`);
+          }}
+          className="w-full btn-outline text-sm py-2.5 hover:bg-primary hover:text-primary-foreground active:scale-[0.98] transition-all duration-200"
         >
           View Details
         </button>

@@ -1,6 +1,6 @@
 import { Truck, Wrench, Home, Package } from "lucide-react";
 import { useRef, useEffect, useState, useCallback } from "react";
-import { useScroll, useMotionValueEvent } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 
 const features = [
   {
@@ -119,9 +119,15 @@ const WhatMakesDifferent = () => {
   return (
     <>
       <section className="section-container pt-10 md:pt-14 pb-6 md:pb-8 bg-cream/50">
-        <h2 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-8">
+        <motion.h2
+          className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           What makes RentBasket Different
-        </h2>
+        </motion.h2>
 
         <div className="hidden md:grid grid-cols-1 md:grid-cols-4 gap-6 max-w-7xl mx-auto p-5">
           {features.map((feature, index) => (

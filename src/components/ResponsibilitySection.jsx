@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-import { useScroll, useMotionValueEvent } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 
 const paragraphs = [
   "At RentBasket we make relocation feel effortless 🧳 from day one.",
@@ -91,16 +91,16 @@ const ResponsibilitySection = () => {
   return (
     <section className="section-container pt-2 md:pt-4 pb-4 md:pb-6 bg-cream/50">
       <div className="flex flex-col lg:hidden max-w-3xl mx-auto text-left lg:text-center">
-        <h2
+        <motion.h2
           className="flex justify-items-start text-3xl md:text-4xl lg:text-5xl font-display font-semibold mb-8"
-          style={{
-            width: "80%",
-            margin: "auto",
-            marginBottom: "5%",
-          }}
+          style={{ width: "80%", margin: "auto", marginBottom: "5%" }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
           We don't just rent out, We take responsibility.
-        </h2>
+        </motion.h2>
 
         <div
           className="space-y-6 text-lg md:text-xl text-left"
@@ -114,16 +114,16 @@ const ResponsibilitySection = () => {
       </div>
 
       <div className="hidden lg:flex flex-col max-w-3xl mx-auto text-center lg:text-center">
-        <h2
+        <motion.h2
           className="flex justify-center text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-8"
-          style={{
-            width: "77%",
-            margin: "auto",
-            marginBottom: "5%",
-          }}
+          style={{ width: "77%", margin: "auto", marginBottom: "5%" }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
           We don't just rent out, We take responsibility.
-        </h2>
+        </motion.h2>
 
         <div
           className="space-y-6 text-left"

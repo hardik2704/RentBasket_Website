@@ -38,6 +38,7 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+          muted: "hsl(var(--destructive-muted))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -55,8 +56,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        coral: "hsl(var(--coral))",
+        coral: {
+          DEFAULT: "hsl(var(--coral))",
+          surface: "hsl(var(--coral-surface))",
+          border: "hsl(var(--coral-border))",
+          darker: "hsl(var(--coral-darker))",
+        },
         gold: "hsl(var(--gold))",
+        "myth-front-from": "hsl(var(--myth-front-from))",
+        "myth-front-to": "hsl(var(--myth-front-to))",
+        "myth-back-from": "hsl(var(--myth-back-from))",
+        "myth-back-to": "hsl(var(--myth-back-to))",
         cream: "hsl(var(--cream))",
         success: {
           DEFAULT: "hsl(var(--success))",

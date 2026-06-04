@@ -146,24 +146,24 @@ const CrossSellStrip = () => {
       <div 
         onClick={() => toggleGlobalBrandNew(!isGlobalBrandNew)}
         className={`flex items-center gap-4 border rounded-2xl px-5 py-4 mb-5 shadow-sm transition-all cursor-pointer select-none group ${
-          isGlobalBrandNew 
-            ? 'bg-[#FDF6F5] border-[#F2D7D5]'  // ignore-harness — design-sprint debt, tracked in review-promotions.md
-            : 'bg-[#FDF6F5] border-[#F2D7D5]' // Keeping the same fain pink tint based on user design // ignore-harness — design-sprint debt, tracked in review-promotions.md
+          isGlobalBrandNew
+            ? 'bg-coral-surface border-coral-border'
+            : 'bg-coral-surface border-coral-border'
         }`}
       >
         <div className="flex-shrink-0 relative flex items-center justify-center">
-          <div className="w-10 h-10 rounded-xl bg-[#E53935] flex items-center justify-center transition-transform hover:scale-105"> // ignore-harness — design-sprint debt, tracked in review-promotions.md
+          <div className="w-10 h-10 rounded-xl bg-destructive flex items-center justify-center transition-transform hover:scale-105">
              <Sparkles className="w-5 h-5 text-white/90 fill-transparent" strokeWidth={2.5} />
           </div>
         </div>
         <div className="flex-1">
-          <h4 className="text-base font-bold text-[#202020] flex items-center gap-2"> // ignore-harness — design-sprint debt, tracked in review-promotions.md
+          <h4 className="text-base font-bold text-foreground flex items-center gap-2">
             Upgrade to Brand New Products?
-            <span className="text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-extrabold bg-[#FCECEB] text-[#E53935]"> // ignore-harness — design-sprint debt, tracked in review-promotions.md
+            <span className="text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-extrabold bg-destructive-muted text-destructive">
               RECOMMENDED
             </span>
           </h4>
-          <p className="text-sm text-[#505050] leading-relaxed mt-0.5"> // ignore-harness — design-sprint debt, tracked in review-promotions.md
+          <p className="text-sm text-muted-foreground leading-relaxed mt-0.5">
             Get factory-fresh, untouched items for just ₹{NEW_PRODUCT_SURCHARGE}/mo extra per product.
           </p>
         </div>

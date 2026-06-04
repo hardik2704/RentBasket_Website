@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 import img1 from "@/assets/Furniture/1.png";
 import img2 from "@/assets/Furniture/2.png";
@@ -117,7 +118,13 @@ const FurnitureGallery = ({ activeCategory = "Furniture" }) => {
   };
 
   return (
-    <section className="bg-cream/40 pt-0 pb-8 md:pb-10 -mt-1">
+    <motion.section
+      className="bg-cream/40 pt-0 pb-8 md:pb-10 -mt-1"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="section-container">
         {/* Catalog scroll */}
         <div className="relative">
@@ -158,7 +165,7 @@ const FurnitureGallery = ({ activeCategory = "Furniture" }) => {
           </button>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
