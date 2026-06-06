@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartHeader from "@/components/cart/CartHeader";
@@ -6,14 +5,20 @@ import CartItemsList from "@/components/cart/CartItemsList";
 import OrderSummary from "@/components/cart/OrderSummary";
 import CrossSellStrip from "@/components/cart/CrossSellStrip";
 import StickyCheckoutBar from "@/components/cart/StickyCheckoutBar";
-import CheckoutContactModal from "@/components/cart/CheckoutContactModal";
 import { useCart } from "@/context/CartContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Cart = () => {
   const { cartItems } = useCart();
   const hasItems = cartItems.length > 0;
-  const [showCheckoutContact, setShowCheckoutContact] = useState(false);
-  const openCheckoutContact = () => setShowCheckoutContact(true);
+  const navigate = useNavigate();
+
+  // Entry point into the digital checkout funnel: verify mobile first.
+  const handleProceedToCheckout = () => {
+    toast.success("Let's verify your mobile to continue");
+    navigate("/customer-validation");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -32,7 +37,7 @@ const Cart = () => {
 
               {/* Right: Order Summary */}
               <div className="lg:col-span-1">
-                <OrderSummary onCheckout={openCheckoutContact} />
+                <OrderSummary onCheckout={handleProceedToCheckout} />
               </div>
             </div>
           ) : (
@@ -41,11 +46,7 @@ const Cart = () => {
         </div>
       </main>
 
-      <StickyCheckoutBar onCheckout={openCheckoutContact} />
-      <CheckoutContactModal
-        open={showCheckoutContact}
-        onClose={() => setShowCheckoutContact(false)}
-      />
+      <StickyCheckoutBar onCheckout={handleProceedToCheckout} />
       <Footer />
     </div>
   );

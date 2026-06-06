@@ -44,7 +44,7 @@ const InputField = ({ label, icon: Icon, placeholder, type = "text", ...props })
   </div>
 );
 
-const CheckoutForm = ({ formData, setFormData }) => {
+const CheckoutForm = ({ formData, setFormData, phoneVerified = false }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -52,40 +52,54 @@ const CheckoutForm = ({ formData, setFormData }) => {
 
   return (
     <div className="w-full">
-      {/* 1. Contact Information */}
-      <CheckoutCard 
-        title="Contact Information" 
+      {/* 1. Your Details (mobile already verified at login/signup) */}
+      <CheckoutCard
+        title="Your Details"
         icon={User}
         subtitle="We'll use these details to share delivery updates and your invoice."
       >
+        {phoneVerified && (
+          <div className="flex items-center justify-between gap-3 mb-5 p-3 bg-success-muted border border-success-border rounded-xl">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
+              <div>
+                <p className="text-[10px] font-bold text-success-muted-foreground uppercase tracking-wider">Mobile Verified</p>
+                <p className="text-sm font-bold text-foreground">+91 {formData.phone}</p>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-success uppercase tracking-wider">Verified</span>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <InputField 
-            label="Full Name" 
-            icon={User} 
+          <InputField
+            label="Full Name"
+            icon={User}
             name="fullName"
-            placeholder="e.g. Rahul Sharma" 
+            placeholder="e.g. Rahul Sharma"
             value={formData.fullName}
             onChange={handleChange}
           />
-          <InputField 
-            label="Mobile Number" 
-            icon={Phone} 
-            name="phone"
-            placeholder="e.g. 99588 58473" 
-            value={formData.phone}
+          <InputField
+            label="Email Address"
+            icon={Mail}
+            name="email"
+            type="email"
+            placeholder="e.g. rahul@example.com"
+            value={formData.email}
             onChange={handleChange}
           />
-          <div className="md:col-span-2">
-            <InputField 
-              label="Email Address" 
-              icon={Mail} 
-              name="email"
-              type="email"
-              placeholder="e.g. rahul@example.com" 
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
+          {!phoneVerified && (
+            <div className="md:col-span-2">
+              <InputField
+                label="Mobile Number"
+                icon={Phone}
+                name="phone"
+                placeholder="e.g. 99588 58473"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
+          )}
         </div>
       </CheckoutCard>
 

@@ -15,6 +15,7 @@ graphify-out/
 # Local environment (keep .env.example tracked as the template)
 .env
 .env.local
+.env.production
 *.local
 
 # OS / editor junk

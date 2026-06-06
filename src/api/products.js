@@ -23,6 +23,19 @@ const VITE_BASE = import.meta.env.VITE_API_BASE_URL?.trim();
 /** True when no API base URL is configured — falls back to bundled mock data. */
 export const USING_MOCK_DATA = !VITE_BASE;
 
+// Guard against a silent misconfiguration: a *production* build with no API URL
+// means the deploy environment never set VITE_API_BASE_URL, so the site quietly
+// serves the bundled ~15-item mock catalog instead of the live API. That silent
+// fallback once shipped to production unnoticed — make it loud. (Dev intentionally
+// uses mock data, so this only fires in a production build.) See docs/DEPLOY.md.
+if (USING_MOCK_DATA && import.meta.env.PROD) {
+  console.error(
+    "[RentBasket] VITE_API_BASE_URL is not set in this production build — serving " +
+      "the bundled MOCK catalog (~15 sample products), NOT the live API. Set " +
+      "VITE_API_BASE_URL and VITE_CATALOG_API_KEY in the deploy environment. See docs/DEPLOY.md.",
+  );
+}
+
 // In dev the Vite proxy forwards /api/* to the real server (avoids CORS).
 // In production the full URL is used directly.
 const API_BASE = import.meta.env.DEV ? "/api" : VITE_BASE;

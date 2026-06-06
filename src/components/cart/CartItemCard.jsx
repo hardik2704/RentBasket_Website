@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { DURATION_OPTIONS } from "@/data/products";
-import { discountedRent, lineOf } from "@/lib/pricing";
+import { discountedRent, lineOf, gstAmount } from "@/lib/pricing";
 import { useProduct } from "@/hooks/useProducts";
 import { Link } from "react-router-dom";
 
@@ -58,7 +58,9 @@ const CartItemCard = ({ item }) => {
   // Resolve image: use product data as source of truth (handles Vite imports)
   const resolvedImage = product?.image || item.image;
   const line = lineOf(item);
-  const lineTotal = line.rentTotal + line.securityTotal;
+  // First-month total includes 18% GST on rent (matches the Order Summary breakdown).
+  const lineGst = gstAmount(line.rentTotal);
+  const lineTotal = line.rentTotal + lineGst + line.securityTotal;
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-soft hover:shadow-card transition-shadow">
@@ -147,6 +149,10 @@ const CartItemCard = ({ item }) => {
                 )}
                 <span>₹{line.rentTotal.toLocaleString("en-IN")}{isMonthly ? "/mo" : ""}</span>
               </span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">GST (18%)</span>
+              <span className="font-medium">₹{lineGst.toLocaleString("en-IN")}</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Deposit</span>
@@ -258,6 +264,9 @@ const CartItemCard = ({ item }) => {
                 <span className="line-through text-muted-foreground text-xs font-normal">₹{line.listRentTotal.toLocaleString("en-IN")}/mo</span>
               )}
               <span>₹{line.rentTotal.toLocaleString("en-IN")}{isMonthly ? <span className="text-sm font-normal text-muted-foreground">/mo</span> : ""}</span>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              + ₹{lineGst.toLocaleString("en-IN")} GST (18%)
             </div>
             <div className="text-xs text-muted-foreground">
               + ₹{line.securityTotal.toLocaleString("en-IN")} deposit <span className="text-success">refundable</span>
