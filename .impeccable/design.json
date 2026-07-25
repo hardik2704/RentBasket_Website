@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-18T00:00:00.000Z",
+  "title": "Design System: RentBasket",
+  "extensions": {
+    "colorMeta": {
+      "coral": { "role": "primary", "displayName": "Signal Coral", "canonical": "hsl(4, 77%, 55%)", "tonalRamp": ["hsl(4,77%,15%)", "hsl(4,77%,25%)", "hsl(4,77%,35%)", "hsl(4,77%,45%)", "hsl(4,77%,55%)", "hsl(4,77%,65%)", "hsl(4,77%,80%)", "hsl(4,77%,95%)"] },
+      "gold": { "role": "secondary", "displayName": "Warm Gold", "canonical": "hsl(45, 100%, 51%)", "tonalRamp": ["hsl(45,100%,15%)", "hsl(45,100%,25%)", "hsl(45,100%,35%)", "hsl(45,100%,45%)", "hsl(45,100%,51%)", "hsl(45,100%,70%)", "hsl(45,100%,85%)", "hsl(45,100%,95%)"] },
+      "cream": { "role": "neutral", "displayName": "Cream Paper", "canonical": "hsl(40, 33%, 97%)", "tonalRamp": ["hsl(40,10%,15%)", "hsl(40,15%,30%)", "hsl(40,20%,50%)", "hsl(40,25%,70%)", "hsl(40,30%,85%)", "hsl(40,33%,92%)", "hsl(40,33%,97%)", "hsl(40,33%,99%)"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "hsl(0, 0%, 13%)", "tonalRamp": ["hsl(0,0%,7%)", "hsl(0,0%,13%)", "hsl(0,0%,25%)", "hsl(0,0%,38%)", "hsl(0,0%,52%)", "hsl(0,0%,68%)", "hsl(0,0%,85%)", "hsl(0,0%,97%)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Playfair Display", "purpose": "All headings (h1-h6 globally), hero copy, section titles." },
+      "script": { "displayName": "Playwrite US Trad", "purpose": "Rare handwritten accent note; never body or headline copy." },
+      "body": { "displayName": "Inter Variable", "purpose": "All functional and paragraph copy, labels, nav, buttons." }
+    },
+    "shadows": [
+      { "name": "soft", "value": "0 4px 20px -4px rgba(0,0,0,0.1)", "purpose": "Resting elevation for buttons and shallow cards." },
+      { "name": "card", "value": "0 8px 30px -8px rgba(0,0,0,0.12)", "purpose": "Default elevation for product/content cards." },
+      { "name": "elevated", "value": "0 12px 40px -12px rgba(0,0,0,0.15)", "purpose": "Hover lift for interactive cards and buttons." }
+    ],
+    "motion": [
+      { "name": "button-transition", "value": "all 300ms ease", "purpose": "Default button hover/shadow/opacity transition." },
+      { "name": "press-scale", "value": "scale(0.98) on active", "purpose": "Tactile press feedback on all buttons." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "2xl", "value": "1536px" },
+      { "name": "2xl-wide", "value": "1600px (section-container cap)" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Coral-filled pill button, the default high-emphasis CTA on marketing surfaces.",
+      "html": "<button class=\"ds-btn-primary\">Get started</button>",
+      "css": ".ds-btn-primary { background: hsl(4,77%,55%); color: #fff; padding: 12px 24px; border-radius: 9999px; font-weight: 500; border: none; box-shadow: 0 4px 20px -4px rgba(0,0,0,0.1); transition: all 300ms ease; } .ds-btn-primary:hover { background: hsl(4,77%,45%); box-shadow: 0 12px 40px -12px rgba(0,0,0,0.15); } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px hsl(4,77%,55%); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Coral-bordered secondary CTA; fills solid on hover.",
+      "html": "<button class=\"ds-btn-outline\">Learn more</button>",
+      "css": ".ds-btn-outline { background: transparent; color: hsl(4,77%,55%); border: 2px solid hsl(4,77%,55%); padding: 10px 22px; border-radius: 9999px; font-weight: 500; transition: all 300ms ease; } .ds-btn-outline:hover { background: hsl(4,77%,55%); color: #fff; } .ds-btn-outline:active { transform: scale(0.98); }"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Catalog/product card: soft shadow at rest, lifts on hover.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-image\"></div><h3 class=\"ds-card-title\">Product name</h3><p class=\"ds-card-price\">₹499/month</p></div>",
+      "css": ".ds-card { background: #fff; border-radius: 12px; box-shadow: 0 8px 30px -8px rgba(0,0,0,0.12); overflow: hidden; transition: box-shadow 300ms ease; } .ds-card:hover { box-shadow: 0 12px 40px -12px rgba(0,0,0,0.15); } .ds-card-image { aspect-ratio: 4/3; background: hsl(40,33%,97%); } .ds-card-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.125rem; padding: 12px 16px 0; color: hsl(0,0%,13%); } .ds-card-price { font-family: 'Inter Variable', sans-serif; color: hsl(4,77%,55%); font-weight: 600; padding: 4px 16px 16px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard form field; coral focus ring matches button focus treatment.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Enter your city\" />",
+      "css": ".ds-input { border: 1px solid hsl(0,0%,90%); border-radius: 10px; padding: 10px 14px; font-family: 'Inter Variable', sans-serif; background: #fff; transition: border-color 200ms ease, box-shadow 200ms ease; } .ds-input:focus-visible { outline: none; border-color: hsl(4,77%,55%); box-shadow: 0 0 0 2px hsl(4,77%,55%,0.2); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Considerate Sublet",
+    "overview": "RentBasket furnishes a home you might not stay in forever, and the design has to earn that trust in one sitting: warm enough to feel like a real home outfitter (Article.com, West Elm), restrained enough to feel like a well-run product (Linear, Vercel), never like a discount big-box retailer or a templated SaaS trial page. The coral-to-gold warmth carries the comfort/care half of the brand; the restraint (flat surfaces, soft ambient shadows, generous whitespace) carries the conserve half. A turtle mascot recurs across marketing sections as the one deliberately playful, unhurried note in an otherwise clean system.",
+    "keyCharacteristics": [
+      "Warm coral/gold brand gradient reserved for hero moments and primary CTAs",
+      "Soft, ambient shadow language — never hard drop shadows",
+      "Serif display (Playfair Display) paired with humanist sans (Inter)",
+      "Fully pill-shaped buttons as the signature interactive shape on marketing surfaces",
+      "HSL CSS custom properties as the single source of truth for color"
+    ],
+    "rules": [
+      { "name": "The Reserved Gradient Rule", "body": "The coral-to-gold gradients are hero-and-CTA-only. Gradient text is never used for emphasis; treat existing instances as legacy risk, not a pattern to extend.", "section": "colors" },
+      { "name": "The One-Voice Italic Rule", "body": "The italic coral headline-accent treatment is the single reserved way to emphasize one word inside a serif headline — not a general-purpose emphasis tool.", "section": "typography" },
+      { "name": "The Hover-Lift Rule", "body": "Interactive surfaces start at soft/card shadow at rest and transition to elevated on hover, never the reverse.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every color reference flowing through the HSL custom properties in src/index.css",
+      "Do use the pill-shaped brand button classes for marketing-surface CTAs",
+      "Do pair Playfair Display headlines with Inter body copy consistently",
+      "Do verify body-text contrast against cream backgrounds specifically, not just white",
+      "Do feature the turtle mascot deliberately in hero, empty-state, and success moments",
+      "Do write button labels, empty states, and error copy in specific, considered language"
+    ],
+    "donts": [
+      "Don't use background-clip gradient text for emphasis",
+      "Don't add a tiny uppercase tracked eyebrow above every section, or numbered section markers where content isn't a genuine sequence",
+      "Don't use border-left/border-right as a colored accent stripe",
+      "Don't default new marketing CTAs to the shadcn Button primitive's rounded-md shape",
+      "Don't use hard, high-contrast drop shadows anywhere",
+      "Don't let hero or hierarchy-critical headline copy overflow at tablet widths"
+    ]
+  }
+}

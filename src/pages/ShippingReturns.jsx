@@ -1,10 +1,8 @@
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const ShippingReturns = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="section-container py-12 md:py-20 max-w-4xl">
         <h1 className="font-display font-semibold text-3xl md:text-4xl text-foreground mb-4">
           Shipping &amp; Returns Policy

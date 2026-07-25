@@ -5,15 +5,16 @@
 
 ## Current State
 
-- **Latest commit:** `603ff5fd` — style: keep footer grid as 2 columns on all viewports to avoid vertical cascading
+- **Latest commit:** `603ff5fd` (plus UI-changes local branch commits)
 - **Test status:** unit: passing (vitest) | e2e: passing (playwright 9/9)
 - **Lint:** clean (ESLint + TypeScript strict)
 - **Build:** `npm run build` succeeds; deployed to GitHub Pages
 - **Environment:** static SPA · GitHub Pages · no backend
-- **As of:** 2026-06-02
+- **As of:** 2026-06-15
 
 ## Completed (recent)
 
+- [x] UI-Testimonials — Interactive testimonials upgrades with framer-motion (spring-physics card hovers, slow-floating background cards, mascot bobbing), design token alignments, and Playwright spec fixes — 2026-06-15
 - [x] Trust & Policy pages — created Terms, Shipping, FAQs, About, Contact pages, wired router and copy-spa-404 config, and verified all 9 tests pass in Playwright — 2026-06-02
 - [x] Phase 2 — wired pricing engine (`src/lib/pricing.js`) into cart and checkout UI, resolved surcharges, lifted coupon state, and enriched WhatsApp order handoff — 2026-06-02
 - [x] Phase 2 planning and implementation plan refinement — aligned on zero-deposit recommendations, WhatsApp pricing details, and orphaned pages integration — 2026-06-02
@@ -56,11 +57,14 @@ _None._
 
 ## Handoff Note
 
-`make check` passes all 3 layers (L1 lint+arch, L2 vitest, L3 Playwright 3/3).
-This session shipped: category tabs on single row (lg:flex-nowrap), SP-02 card hover (whileHover y:-4 + shadow-elevated 200ms),
-SP-03 page transitions (AnimatePresence mode=wait via RouterApp inner component), Testimonials colour tokens fixed (text-gold, text-muted-foreground, shadow-elevated),
-Footer inline styles removed + copyright 2026 + py-16 breathing room, FreeServices scroll-reveal (whileInView fadeUp), text-gradient-coral token added to index.css.
-Next priority: finish SP-04 scroll-reveal on remaining sections + fix MythOrFact raw hex colours (D04).
+Playwright e2e passes 9/9.
+This session shipped:
+- Upgraded `LovedByCustomers` page section with `framer-motion` spring animations.
+- Sibling cards dim to `0.5` opacity on hover while the active card moves to front, scales up `1.04`, translates up `-15px`, and shifts laterally to show obscured text.
+- Mascot floats gently with an infinite bobbing animation.
+- Background blurred cards float asynchronously at varying durations.
+- Aligned cards with style system HSL variables (replacing raw hex values) and formatted text highlights.
+- Fixed Playwright baseURL path mismatch and dual-hero h1/cta strict mode selector conflicts.
 
 ---
-_Last updated by `claude-code` at 2026-05-23T00:00:00Z via harness bootstrap._
+_Last updated by `claude-code` at 2026-06-15T11:45:00Z via harness bootstrap._

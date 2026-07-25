@@ -31,7 +31,8 @@ copyFileSync(indexPath, join(distDir, "404.html"));
 const staticRoutes = [
   "catalog",
   "catalogue",
-  "cart",
+  "basket",
+  "cart", // legacy — SPA client-redirects /cart → /basket
   "checkout",
   "order-success",
   "terms-n-conditions",

@@ -37,8 +37,8 @@ const DurationSelector = ({ product, selectedDuration, onDurationChange }) => {
               onClick={() => onDurationChange(d.key)}
               className={`relative flex flex-col items-center justify-center px-2 py-3 md:py-3.5 rounded-xl border-2 transition-all duration-200 text-center ${
                 isSelected
-                  ? "border-primary bg-primary/5 shadow-soft"
-                  : "border-border hover:border-primary/40 bg-background"
+                  ? "border-foreground bg-foreground/5 shadow-sm"
+                  : "border-border hover:border-foreground/35 bg-background"
               }`}
             >
               {/* Badge — floats above the top border of the box */}
@@ -46,10 +46,10 @@ const DurationSelector = ({ product, selectedDuration, onDurationChange }) => {
                 <span
                   className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap z-10 ${
                     badge === "Best Value"
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-foreground text-background"
                       : badge === "Most Popular"
-                      ? "bg-amber-500 text-white"
-                      : "bg-primary text-primary-foreground"
+                      ? "bg-secondary text-foreground"
+                      : "bg-foreground text-background"
                   }`}
                 >
                   {badge}
@@ -58,14 +58,14 @@ const DurationSelector = ({ product, selectedDuration, onDurationChange }) => {
 
               <span
                 className={`text-xs md:text-sm font-semibold mb-0.5 ${
-                  isSelected ? "text-primary" : "text-foreground"
+                  isSelected ? "text-foreground" : "text-foreground"
                 }`}
               >
                 {d.label}
               </span>
               <span
                 className={`text-[11px] md:text-xs font-medium ${
-                  isSelected ? "text-primary/80" : "text-muted-foreground"
+                  isSelected ? "text-foreground/80" : "text-muted-foreground"
                 }`}
               >
                 {formatPrice(d.key)}

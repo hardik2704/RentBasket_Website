@@ -113,7 +113,7 @@ const ResponsibilitySection = () => {
 
       <div className="hidden lg:flex flex-col max-w-3xl mx-auto text-center lg:text-center">
         <h2
-          className="flex justify-center text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-8"
+          className="flex justify-center text-3xl md:text-4xl lg:text-5xl font-display font-semibold mb-8"
           style={{
             marginBottom: "5%",
           }}

@@ -30,7 +30,7 @@ test("F01 — hero section renders with headline, CTA, and nav", async ({
   await expect(page.locator("header")).toBeVisible();
 
   // Hero headline: Playfair Display heading — find any h1
-  const h1 = page.locator("h1").first();
+  const h1 = page.locator("h1:visible").first();
   await expect(h1).toBeVisible();
   const headlineText = await h1.textContent();
   if (!headlineText || headlineText.trim().length < 5) {
@@ -43,7 +43,7 @@ FIX:   Open src/components/HeroSection.jsx, confirm the headline JSX is present 
   }
 
   // Hero CTA must be present and visible
-  const cta = page.locator('[data-testid="hero-cta"]');
+  const cta = page.locator('[data-testid="hero-cta"]:visible');
   await expect(cta).toBeVisible();
 
   // Load time check (3s budget per F01 spec)
@@ -63,7 +63,7 @@ test("D01 — mobile hero (375 px) — CTA visible above fold, headline legible"
   await page.goto("/");
 
   // CTA must be visible without scrolling (above fold) — target hero CTA specifically
-  const cta = page.locator('[data-testid="hero-cta"]');
+  const cta = page.locator('[data-testid="hero-cta"]:visible');
   await expect(cta).toBeVisible();
 
   const ctaBox = await cta.boundingBox();
@@ -77,7 +77,7 @@ FIX:   Open src/components/HeroSection.jsx. Reduce hero vertical padding or rest
   }
 
   // Headline must be visible
-  const h1 = page.locator("h1").first();
+  const h1 = page.locator("h1:visible").first();
   await expect(h1).toBeVisible();
 
   // Screenshot for rubric evaluation

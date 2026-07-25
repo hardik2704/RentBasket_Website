@@ -12,9 +12,7 @@
  *
  * This is a NO-OP until `VITE_API_BASE_URL` is set, so it changes nothing today.
  */
-const API_BASE = import.meta.env.DEV
-  ? "/api"
-  : import.meta.env.VITE_API_BASE_URL?.trim();
+import { API_BASE } from "./config";
 
 /** Cart sync is disabled until the handoff API contract is confirmed with Shivam. */
 export const CART_SYNC_ENABLED = false;

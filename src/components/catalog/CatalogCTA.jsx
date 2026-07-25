@@ -13,7 +13,7 @@ const CatalogCTA = () => {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href="tel:+919958858473"
+              href="tel:+919959858473"
               className="btn-outline py-3 px-7 text-sm md:text-base"
             >
               Talk to Us

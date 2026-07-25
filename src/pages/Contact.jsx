@@ -20,12 +20,12 @@ const Contact = () => {
           {/* Gurgaon Office */}
           <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 space-y-4">
             <h2 className="font-display font-semibold text-xl text-foreground flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">1</span>
+              <span className="w-8 h-8 rounded-lg bg-secondary text-foreground flex items-center justify-center text-sm font-bold">1</span>
               Gurgaon Office
             </h2>
             <div className="space-y-3 font-sans text-muted-foreground text-sm sm:text-base">
               <div className="flex items-start gap-2.5">
-                <MapPin className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <MapPin className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
                 <span>
                   C9/2, Lower Ground Floor,<br />
                   Ardee City, Sector 52,<br />
@@ -33,9 +33,9 @@ const Contact = () => {
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Phone className="w-5 h-5 text-primary shrink-0" />
-                <a href="tel:+919958858473" className="hover:text-primary transition-colors">
-                  +91 99588 58473
+                <Phone className="w-5 h-5 text-muted-foreground shrink-0" />
+                <a href="tel:+919959858473" className="hover:text-foreground transition-colors">
+                  +91 99598 58473
                 </a>
               </div>
             </div>
@@ -54,12 +54,12 @@ const Contact = () => {
           {/* Noida Office */}
           <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 space-y-4">
             <h2 className="font-display font-semibold text-xl text-foreground flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">2</span>
+              <span className="w-8 h-8 rounded-lg bg-secondary text-foreground flex items-center justify-center text-sm font-bold">2</span>
               Noida Office
             </h2>
             <div className="space-y-3 font-sans text-muted-foreground text-sm sm:text-base">
               <div className="flex items-start gap-2.5">
-                <MapPin className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <MapPin className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
                 <span>
                   Plot No B.L.K 15, Basement,<br />
                   Sector 116, Noida,<br />
@@ -67,8 +67,8 @@ const Contact = () => {
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Phone className="w-5 h-5 text-primary shrink-0" />
-                <a href="tel:+919958004438" className="hover:text-primary transition-colors">
+                <Phone className="w-5 h-5 text-muted-foreground shrink-0" />
+                <a href="tel:+919958004438" className="hover:text-foreground transition-colors">
                   +91 99580 04438
                 </a>
               </div>
@@ -94,20 +94,20 @@ const Contact = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm sm:text-base text-muted-foreground font-sans">
             <a
               href="mailto:support@rentbasket.com"
-              className="flex items-center gap-2 hover:text-primary transition-colors"
+              className="flex items-center gap-2 hover:text-foreground transition-colors"
             >
-              <Mail className="w-5 h-5 text-primary" />
+              <Mail className="w-5 h-5 text-muted-foreground" />
               support@rentbasket.com
             </a>
             <span className="hidden sm:inline text-border">|</span>
             <a
-              href="https://wa.me/919958858473"
+              href="https://wa.me/919959858473"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:text-primary transition-colors"
+              className="flex items-center gap-2 hover:text-foreground transition-colors"
             >
               <MessageSquare className="w-5 h-5 text-[#2E7D32]" />
-              WhatsApp Support (+91 99588 58473)
+              WhatsApp Support (+91 99598 58473)
             </a>
           </div>
         </div>

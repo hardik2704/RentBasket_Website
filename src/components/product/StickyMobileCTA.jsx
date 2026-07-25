@@ -6,6 +6,7 @@ const StickyMobileCTA = ({ product, selectedDuration, onAddToCart }) => {
   const price = discountedRent(pricing[selectedDuration] || 0, product.percent_discount);
   const isMonthly = ["3_months", "6_months", "9_months", "12_months"].includes(selectedDuration);
   const durationLabel = DURATION_OPTIONS.find((d) => d.key === selectedDuration)?.label || "";
+  const isOutOfStock = product.stock_status === "out_of_stock";
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border shadow-elevated">
@@ -28,9 +29,10 @@ const StickyMobileCTA = ({ product, selectedDuration, onAddToCart }) => {
         {/* CTA */}
         <button
           onClick={onAddToCart}
-          className="btn-gradient-coral px-6 py-2.5 text-sm font-semibold whitespace-nowrap flex-shrink-0"
+          disabled={isOutOfStock}
+          className="btn-gradient-coral px-6 py-2.5 text-sm font-semibold whitespace-nowrap flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale"
         >
-          Add to Cart
+          {isOutOfStock ? "Out of Stock" : "Add to Basket"}
         </button>
       </div>
     </div>

@@ -1,0 +1,39 @@
+pipelines:
+  branches:
+    main:
+      - step:
+          name: 'Deploy to Production'
+          deployment: production
+          runs-on:
+            - homeui
+            - self.hosted
+            - linux.shell
+          script:
+            - DEPLOY_PATH=/var/www/homeui
+
+            - cd $BITBUCKET_CLONE_DIR
+            - echo "Creating .env file"
+            # Write each var as an explicit NAME=value line so a malformed repo
+            # variable can't merge/double prefixes (the old `echo "$VAR"` form
+            # required each repo var to secretly carry its own NAME= prefix, which
+            # silently corrupted the build when VITE_PROXY_URL got a doubled prefix).
+            # These are all PUBLIC values (URLs + brand name) — no secrets here.
+            # PROXY MODE is fixed here so the live site always routes through the
+            # api.rentbasket.com proxy (the real keys live only in the Netlify
+            # proxy env; the bundle ships none).
+            - echo "VITE_BASE_URL=/" > .env
+            - echo "VITE_APP_NAME=RentBasket" >> .env
+            - echo "VITE_API_BASE_URL=https://api.rentbasket.com" >> .env
+            - echo "VITE_PROXY_URL=https://proxyapi.rentbasket.com" >> .env
+            - echo "VITE_WHATSAPP_NUMBER=919999999999" >> .env
+            # GA4 Measurement ID for the live rentbasket.com property. Public
+            # client-side identifier (ships in the bundle by design), not a secret.
+            - echo "VITE_GA_ID=G-9GJ3QWXF29" >> .env
+
+            - npm i
+            - npm run build
+            - sudo rsync -av --delete --exclude='.git' $BITBUCKET_CLONE_DIR/ $DEPLOY_PATH/
+
+            - sudo chown -R ubuntu:www-data $DEPLOY_PATH
+            - sudo chmod -R 775 $DEPLOY_PATH
+            - sudo nginx -s reload

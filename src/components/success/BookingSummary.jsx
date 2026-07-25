@@ -48,7 +48,7 @@ const BookingSummary = ({ orderData }) => {
                   <span>Starts: {orderData.deliveryDate}</span>
                 </div>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm font-black text-primary">₹{item.price.toLocaleString("en-IN")}/mo</span>
+                  <span className="text-sm text-foreground font-bold">₹{item.price.toLocaleString("en-IN")}/mo</span>
                 </div>
               </div>
             </div>
@@ -59,7 +59,7 @@ const BookingSummary = ({ orderData }) => {
         <div className="bg-secondary/20 rounded-2xl p-5 space-y-3 border border-border/50">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground font-medium">Total Rent</span>
-            <span className="line-through text-muted-foreground text-xs">
+            <span className="text-muted-foreground text-xs">
               ₹{(totalRent || baseRent || 0).toLocaleString("en-IN")}/mo
             </span>
           </div>
@@ -116,10 +116,10 @@ const BookingSummary = ({ orderData }) => {
             </div>
           </div>
 
-          <div className="border-t-2 border-primary/10 pt-4 mt-2 bg-primary/[0.01] -mx-5 px-5 pb-2 rounded-b-xl">
+          <div className="border-t border-border pt-4 mt-2 bg-secondary/10 -mx-5 px-5 pb-2 rounded-b-xl">
             <div className="flex items-baseline justify-between mb-1">
               <span className="text-base font-bold text-foreground">Total (First Month)</span>
-              <span className="text-xl font-black text-primary tracking-tight">
+              <span className="text-xl text-foreground font-black tracking-tight">
                 ₹{(netFirstMonth || 0).toLocaleString("en-IN")}
               </span>
             </div>
@@ -134,11 +134,11 @@ const BookingSummary = ({ orderData }) => {
           {/* Delivery Details */}
           <div className="p-4 rounded-xl border border-border/50 bg-background">
             <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-3 uppercase tracking-wider">
-              <MapPin className="w-3.5 h-3.5 text-primary" /> Delivery Details
+              <MapPin className="w-3.5 h-3.5 text-muted-foreground" /> Delivery Details
             </h4>
             <div className="space-y-2 text-sm">
-              <p className="font-semibold">{customerDetails.name}</p>
-              <p className="text-muted-foreground flex items-center gap-1.5 text-xs"><User className="w-3 h-3"/> {customerDetails.phone}</p>
+              <p className="font-semibold">{customerDetails?.name}</p>
+              <p className="text-muted-foreground flex items-center gap-1.5 text-xs"><User className="w-3 h-3"/> {customerDetails?.phone}</p>
               <p className="text-muted-foreground text-xs leading-relaxed">{deliveryAddress}</p>
               <div className="mt-2 text-[10px] bg-secondary/40 px-2 py-1.5 rounded text-muted-foreground font-medium inline-block">
                 Slot: {orderData.deliverySlot}
@@ -149,16 +149,16 @@ const BookingSummary = ({ orderData }) => {
           {/* Payment Details */}
           <div className="p-4 rounded-xl border border-border/50 bg-background">
             <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-3 uppercase tracking-wider">
-              <CreditCard className="w-3.5 h-3.5 text-primary" /> Payment Info
+              <CreditCard className="w-3.5 h-3.5 text-muted-foreground" /> Payment Info
             </h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Method</span>
-                <span className="font-medium uppercase">{paymentDetails.method}</span>
+                <span className="font-medium uppercase">{paymentDetails?.method}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Transaction ID</span>
-                <span className="font-medium text-xs font-mono">{paymentDetails.transactionId}</span>
+                <span className="font-medium text-xs font-mono">{paymentDetails?.transactionId}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Invoice</span>

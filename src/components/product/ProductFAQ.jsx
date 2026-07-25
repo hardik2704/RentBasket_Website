@@ -13,8 +13,8 @@ const ProductFAQ = ({ product }) => {
     <section className="section-container py-10 md:py-14">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-3 mb-6 md:mb-8">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <HelpCircle className="w-5 h-5 text-primary" />
+          <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+            <HelpCircle className="w-5 h-5 text-foreground" />
           </div>
           <h2 className="text-xl md:text-2xl font-display font-bold">
             Frequently Asked Questions

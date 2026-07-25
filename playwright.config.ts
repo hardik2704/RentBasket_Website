@@ -28,7 +28,7 @@ export default defineConfig({
 
   use: {
     // Base URL — `vite preview` serves the built dist/ here
-    baseURL: "http://localhost:4173/RentBasket_Website/",
+    baseURL: "http://localhost:4173/",
 
     // Always capture screenshots on failure for design rubric review
     screenshot: "only-on-failure",
@@ -42,7 +42,7 @@ export default defineConfig({
   // Auto-start `vite preview` before running tests and stop it after
   webServer: {
     command: "npx vite preview --port 4173",
-    url: "http://localhost:4173/RentBasket_Website/",
+    url: "http://localhost:4173/",
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
     // Build must exist before preview — run `make build` first

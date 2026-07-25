@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, HelpCircle, Phone, MessageSquare } from "lucide-react";
+import { ChevronDown, Phone, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -47,18 +47,15 @@ const FAQs = () => {
       <Header />
       <main className="section-container py-12 md:py-20 max-w-3xl">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mb-4">
-            <HelpCircle className="w-6 h-6 text-primary" />
-          </div>
-          <h1 className="font-display font-semibold text-3xl md:text-4xl text-foreground">
+          <p className="text-foreground/60 font-sans font-semibold text-sm uppercase tracking-widest mb-3">
+            FAQ'S
+          </p>
+          <h1 className="font-display font-extrabold text-5xl md:text-7xl text-foreground leading-tight">
             Frequently Asked Questions
           </h1>
-          <p className="text-muted-foreground mt-2 font-sans max-w-lg mx-auto">
-            Got questions about deposits, delivery, or damages? We've got you covered.
-          </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {faqs.map((faq, i) => {
             const isOpen = openIndex === i;
             return (
@@ -68,9 +65,9 @@ const FAQs = () => {
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : i)}
-                  className="w-full flex items-center justify-between px-6 py-5 text-left focus:outline-none"
+                  className="w-full flex items-center justify-between px-7 py-6 text-left focus:outline-none"
                 >
-                  <span className="text-base font-semibold text-foreground pr-4 font-sans leading-snug">
+                  <span className="text-base font-bold text-foreground pr-4 font-sans leading-snug">
                     {faq.q}
                   </span>
                   <ChevronDown
@@ -111,22 +108,22 @@ const FAQs = () => {
               Our team is ready to assist you with custom requirements or support queries.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3 w-full md:w-auto">
+          <div className="flex gap-3 w-full md:w-auto">
             <a
-              href="tel:+919958858473"
-              className="flex-1 md:flex-initial flex items-center justify-center gap-2 h-11 px-5 rounded-full border border-border text-foreground font-sans font-bold text-sm bg-white hover:bg-secondary transition-colors"
+              href="tel:+919959858473"
+              className="flex-1 md:flex-none whitespace-nowrap flex items-center justify-center gap-2 h-11 px-5 rounded-full border border-border text-foreground font-sans font-bold text-sm bg-white hover:bg-secondary transition-colors"
             >
               <Phone className="w-4 h-4 text-muted-foreground" />
               Call Gurgaon
             </a>
             <a
-              href="https://wa.me/919958858473"
+              href="https://wa.me/919959858473"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 md:flex-initial flex items-center justify-center gap-2 h-11 px-5 rounded-full text-white font-sans font-bold text-sm bg-[#2E7D32] hover:bg-[#2E7D32]/90 transition-colors"
+              className="flex-1 md:flex-none whitespace-nowrap flex items-center justify-center gap-2 h-11 px-5 rounded-full text-white font-sans font-bold text-sm bg-[#2E7D32] hover:bg-[#2E7D32]/90 transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
-              WhatsApp Us
+              WhatsApp
             </a>
           </div>
         </div>

@@ -5,15 +5,28 @@ const DownloadSection = () => {
   return (
     <section
       id="download"
-      className="relative mt-0 pt-0 bg-background"
+      className="relative mt-0 pt-0 bg-background overflow-x-clip"
     >
-      {/* Mascot is now a direct child of the outer section, ensuring it sits on top of all layers */}
-      <div className="absolute left-1/2 -translate-x-1/2 md:left-[8%] md:translate-x-0 lg:left-[12%] -top-14 md:-top-22 lg:top-10 z-30">
+      {/* Mascot — sits on top of all layers.
+          Mobile/tablet (< lg): centered / left-[8%] of the full section, unchanged.
+          Desktop (lg+): anchored to a centered max-w-7xl overlay (matching the
+          capped content + phone) so it stays above the "DOWNLOAD TODAY" text
+          instead of drifting to the far-left edge on wide / zoomed-out screens. */}
+      <div className="lg:hidden absolute left-1/2 -translate-x-1/2 md:left-[8%] md:translate-x-0 -top-14 md:-top-22 z-30">
         <img
           src={turtleMascot}
           alt="RentBasket Turtle Mascot"
-          className="h-60 w-60 md:h-80 md:w-80 lg:h-60 lg:w-60 object-contain"
+          className="h-60 w-60 md:h-80 md:w-80 object-contain"
         />
+      </div>
+      <div className="hidden lg:block absolute inset-x-0 top-10 z-30 pointer-events-none">
+        <div className="relative max-w-7xl mx-auto">
+          <img
+            src={turtleMascot}
+            alt="RentBasket Turtle Mascot"
+            className="absolute left-4 xl:left-0 h-60 w-60 object-contain"
+          />
+        </div>
       </div>
 
       {/* White top area — just a sliver */}
@@ -22,7 +35,7 @@ const DownloadSection = () => {
 
       {/* Red gradient platform — extends up behind mascot's lower half with top & bottom shadow */}
       <section className="relative w-full bg-gradient-download pt-14 md:pt-16 lg:pt-28 pb-12 md:pb-16 shadow-[0_0_35px_rgba(0,0,0,0.25)] z-10">
-        <div className="container mx-auto px-6 relative z-10">
+        <div className="section-container relative z-10">
           {/* DOWNLOAD TODAY heading — now sits on the red platform, guiding down */}
           <div className="lg:max-w-[50%] lg:ml-0 mx-auto lg:mx-0 text-center lg:text-left mb-6 lg:mb-10 relative z-10">
             <h1 className="font-display text-4xl md:text-6xl lg:text-5xl font-bold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
@@ -34,10 +47,10 @@ const DownloadSection = () => {
             {/* Feature Text */}
             <div className="mb-6 md:mb-8 space-y-1 w-full lg:text-left text-center relative z-10">
               <p className="hidden lg:flex text-lg md:text-xl font-semibold text-white md:text-2xl">
-                Never Miss an Offer
+                Faster KYC with camera capture
               </p>
               <p className="hidden lg:flex text-lg md:text-xl font-semibold text-white md:text-2xl">
-                Get exclusive Deals
+                Live delivery &amp; renewal updates
               </p>
               <p className="text-xl md:text-2xl font-semibold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
                 Track orders and renewals in one place.
@@ -115,13 +128,20 @@ const DownloadSection = () => {
           </div>
         </div>
 
-        {/* Desktop Phone Mockup — extends above red boundary */}
-        <div className="hidden lg:block absolute right-[6%] -top-24 z-20">
-          <img
-            src={phoneAppScreen}
-            alt="RentBasket App Interface"
-            className="h-[640px] lg:h-[700px] -rotate-10 transform object-contain drop-shadow-2xl transition-all duration-300"
-          />
+        {/* Desktop Phone Mockup — extends above red boundary.
+            Anchored to a centered max-w-7xl overlay (matching the capped content
+            column) so on wide / zoomed-out screens it stays beside the text
+            instead of flying out to the section's far-right edge. Height scales
+            with the breakpoint and is capped to the viewport so it never dwarfs
+            the section; vertically centered on the platform to stay grounded. */}
+        <div className="hidden lg:block absolute inset-0 z-20 pointer-events-none">
+          <div className="relative w-full h-full max-w-7xl mx-auto">
+            <img
+              src={phoneAppScreen}
+              alt="RentBasket App Interface"
+              className="absolute right-0 xl:right-[2%] top-1/2 -translate-y-1/2 -mt-10 h-[clamp(440px,38vw,700px)] max-h-[78vh] -rotate-10 transform object-contain drop-shadow-2xl transition-all duration-300"
+            />
+          </div>
         </div>
 
 

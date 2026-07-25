@@ -27,7 +27,6 @@ import best5 from "@/assets/Bestsellers/5.png";
 export const DURATION_OPTIONS = [
   { key: "3_months", label: "3 Months", short: "3M" },
   { key: "6_months", label: "6 Months", short: "6M" },
-  { key: "9_months", label: "9 Months", short: "9M" },
   { key: "12_months", label: "12 Months", short: "12M" },
 ];
 
@@ -35,6 +34,7 @@ export const CATEGORIES = [
   "All",
   "Furniture",
   "Appliances",
+  "Rugs & Mattresses",
   "Bestsellers",
   "Short-Term Rental",
   "Complete Home Setup",
@@ -72,7 +72,6 @@ export const SORT_OPTIONS = [
 export const DURATION_BADGES = {
   "3_months": null,
   "6_months": "Most Popular",
-  "9_months": null,
   "12_months": "Best Value",
 };
 
@@ -80,7 +79,6 @@ export const DURATION_BADGES = {
 export const MONTHLY_DURATION_KEYS = [
   "3_months",
   "6_months",
-  "9_months",
   "12_months",
 ];
 
@@ -100,7 +98,7 @@ export const DEFAULT_FAQ = [
   },
   {
     q: "Is the deposit refundable?",
-    a: "Yes, the security deposit is fully refundable at the end of your rental period, subject to normal wear and tear assessment.",
+    a: "Yes, the deposit is fully refundable at the end of your rental period, subject to normal wear and tear assessment.",
   },
   {
     q: "Can I upgrade later?",

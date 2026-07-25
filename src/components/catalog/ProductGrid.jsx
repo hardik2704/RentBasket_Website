@@ -5,7 +5,7 @@ import { Package } from "lucide-react";
 
 const PAGE_SIZE = 12;
 
-const ProductGrid = ({ products }) => {
+const ProductGrid = ({ products, displayDuration }) => {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const sentinelRef = useRef(null);
 
@@ -34,7 +34,7 @@ const ProductGrid = ({ products }) => {
   const hasMore = visibleCount < products.length;
 
   return (
-    <section className="section-container py-8 md:py-12">
+    <section className="py-0">
       {products.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
@@ -66,10 +66,14 @@ const ProductGrid = ({ products }) => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
             <AnimatePresence mode="popLayout">
               {visible.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  displayDuration={displayDuration}
+                />
               ))}
             </AnimatePresence>
           </div>

@@ -1,0 +1,20 @@
+# Netlify config for the RentBasket API proxy (Option A).
+# Deploy as a SEPARATE Netlify site with base directory = proxy/.
+# Custom domain: api.rentbasket.com (add a CNAME in Wix DNS → <site>.netlify.app).
+
+[build]
+  functions = "netlify/functions"
+  publish = "public"
+
+# Catch-all: every request is handled by the proxy function.
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# Baseline headers on the proxy's own responses.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

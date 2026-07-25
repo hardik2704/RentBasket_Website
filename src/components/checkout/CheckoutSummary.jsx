@@ -1,24 +1,18 @@
-import { useState } from "react";
-import { ShieldCheck, Info, Tag, Bookmark, Truck, Wrench, CheckCircle } from "lucide-react";
+import { ShieldCheck, Info, Tag, Truck, Wrench, CheckCircle, Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Link } from "react-router-dom";
 import { cartBreakdown, lineOf } from "@/lib/pricing";
 
-const MONTHLY_KEYS = new Set(["3_months", "6_months", "9_months", "12_months"]);
-const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
-  const { cartItems, getCartItemCount, coupon, applyCoupon, removeCoupon } = useCart();
-  const [couponCode, setCouponCode] = useState(coupon?.code || "");
-  
-  if (cartItems.length === 0) return null;
+const CheckoutSummary = ({ onPlaceOrder, isProcessing, items, paymentChoice = "min", onPaymentChoiceChange }) => {
+  const { activeItems, coupon, removeCoupon } = useCart();
+  // The order being placed is a single duration group. Callers pass that group
+  // as `items`; default to the active group for any standalone use.
+  const groupItems = items ?? activeItems;
 
-  const itemCount = getCartItemCount();
-  const b = cartBreakdown(cartItems, coupon);
-  const hasMonthlyItems = cartItems.some((item) => MONTHLY_KEYS.has(item.duration));
+  if (groupItems.length === 0) return null;
 
-  const handleApplyCoupon = () => {
-    if (!couponCode.trim()) return;
-    applyCoupon(couponCode);
-  };
+  const itemCount = groupItems.reduce((n, i) => n + (i.quantity || 0), 0);
+  const b = cartBreakdown(groupItems, coupon);
 
   return (
     <div className="lg:sticky lg:top-24 space-y-5">
@@ -26,7 +20,7 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
         {/* Header */}
         <div className="px-6 py-5 border-b border-border/50 bg-secondary/10">
           <h3 className="text-base font-bold flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-foreground/80" />
             Order Summary
           </h3>
           <p className="text-[11px] text-muted-foreground mt-1 font-medium uppercase tracking-wider">
@@ -37,7 +31,7 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
         <div className="p-6 space-y-5">
           {/* Items Preview */}
           <div className="space-y-4">
-            {cartItems.map((item) => {
+            {groupItems.map((item) => {
               const line = lineOf(item);
               return (
                 <div key={item.cartItemId} className="flex gap-3 pb-4 border-b border-border/30 last:border-0 last:pb-0">
@@ -50,9 +44,9 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
                       {item.durationLabel} • {item.quantity} {item.quantity === 1 ? "Unit" : "Units"}
                     </p>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-[11px] font-bold text-primary flex items-center gap-1">
+                      <span className="text-[11px] font-bold text-foreground flex items-center gap-1">
                         {line.listRentTotal > line.rentTotal && (
-                          <span className="line-through text-muted-foreground text-[9px]">₹{line.listRentTotal.toLocaleString("en-IN")}</span>
+                          <span className="text-muted-foreground text-[9px]">₹{line.listRentTotal.toLocaleString("en-IN")}</span>
                         )}
                         <span>₹{line.rentTotal.toLocaleString("en-IN")}/mo</span>
                       </span>
@@ -67,7 +61,7 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground font-medium">Total Rent</span>
-              <span className="line-through text-muted-foreground text-xs">₹{b.totalRent.toLocaleString("en-IN")}/mo</span>
+              <span className="text-muted-foreground text-xs">₹{b.totalRent.toLocaleString("en-IN")}/mo</span>
             </div>
 
             {b.itemSavings > 0 && (
@@ -130,16 +124,69 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
           </div>
 
           {/* Grand Total */}
-          <div className="border-t-2 border-primary/10 pt-5 bg-primary/[0.01] -mx-6 px-6 pb-2">
+          <div className="border-t border-border pt-5 bg-secondary/10 -mx-6 px-6 pb-2">
             <div className="flex items-baseline justify-between mb-1">
               <span className="text-base font-bold text-foreground">Total (First Month)</span>
-              <span className="text-2xl font-black text-primary tracking-tight">
+              <span className="text-2xl font-black text-foreground tracking-tight">
                 ₹{b.netFirstMonth.toLocaleString("en-IN")}
               </span>
             </div>
-            <p className="text-[10px] md:text-xs text-muted-foreground mt-2 leading-relaxed text-right">
-              Pay <strong className="text-foreground">₹{b.upfront.toLocaleString("en-IN")}</strong> now (50%), rest on delivery.
-            </p>
+
+            {/* Payment choice — Full vs 50% upfront. Drives razorpay payment_type. */}
+            <div className="mt-3 space-y-2.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Choose how much to pay now
+              </p>
+              {[
+                {
+                  id: "min",
+                  title: "Pay 50% Now",
+                  amount: b.upfront,
+                  sub: `₹${b.payOnDelivery.toLocaleString("en-IN")} on delivery`,
+                },
+                {
+                  id: "full",
+                  title: "Pay Full Amount",
+                  amount: b.netFirstMonth,
+                  sub: "Nothing due on delivery",
+                },
+              ].map((opt) => {
+                const isSelected = paymentChoice === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => onPaymentChoiceChange?.(opt.id)}
+                    aria-pressed={isSelected}
+                    className={`w-full flex items-center justify-between gap-3 p-3.5 rounded-xl border-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20 active:scale-[0.99] ${
+                      isSelected
+                        ? "border-foreground bg-foreground/5 ring-1 ring-foreground/20"
+                        : "border-border bg-background hover:border-foreground/35 hover:bg-secondary/20"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={`w-5 h-5 rounded-full flex items-center justify-center border-2 flex-shrink-0 transition-colors ${
+                          isSelected ? "bg-foreground border-foreground text-background" : "border-border text-transparent"
+                        }`}
+                      >
+                        <Check className="w-3 h-3 stroke-[3px]" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-foreground">
+                          {opt.title}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground font-medium leading-tight">{opt.sub}</p>
+                      </div>
+                    </div>
+                    <span className="text-base font-black tracking-tight flex-shrink-0 text-foreground">
+                      ₹{opt.amount.toLocaleString("en-IN")}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="flex items-center gap-1.5 text-success bg-success-muted px-2.5 py-1.5 rounded-xl border border-success-border mt-3 shadow-sm justify-center">
               <ShieldCheck className="w-4 h-4 flex-shrink-0" />
               <p className="text-[10px] font-bold leading-tight uppercase tracking-wider">
@@ -148,43 +195,23 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
             </div>
           </div>
 
-          {/* Coupon */}
-          <div className="pt-4 border-t border-border/50">
-            {coupon ? (
+          {/* Coupon — auto-surfaced from backend, no manual entry */}
+          {coupon && (
+            <div className="pt-4 border-t border-border/50">
               <div className="flex items-center justify-between bg-success-muted border border-success-border rounded-xl px-4 py-2.5">
                 <div className="flex items-center gap-2 text-success-muted-foreground text-sm font-medium">
                   <Tag className="w-4 h-4" />
-                  {coupon.code} applied
+                  {coupon.code} — save {coupon.type === "percent" ? `${coupon.value}%` : `₹${coupon.value}`}
                 </div>
                 <button
-                  onClick={() => {
-                    removeCoupon();
-                    setCouponCode("");
-                  }}
+                  onClick={removeCoupon}
                   className="text-xs text-red-500 hover:underline font-medium"
                 >
                   Remove
                 </button>
               </div>
-            ) : (
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  placeholder="Enter coupon code" 
-                  className="flex-1 px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background"
-                  onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
-                />
-                <button 
-                  onClick={handleApplyCoupon}
-                  className="px-4 py-2.5 rounded-xl border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-colors"
-                >
-                  Apply
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* CTA */}
           <button
@@ -192,7 +219,9 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
             disabled={isProcessing}
             className="gradient-coral w-full py-4 rounded-2xl font-black text-lg shadow-lg shadow-primary/30 transition-all hover:shadow-primary/40 hover:opacity-95 active:scale-[0.98] disabled:opacity-70 disabled:grayscale flex items-center justify-center gap-3 group"
           >
-            {isProcessing ? "Processing..." : "Confirm & Pay Now"}
+            {isProcessing
+              ? "Processing..."
+              : `Confirm & Pay ₹${(paymentChoice === "full" ? b.netFirstMonth : b.upfront).toLocaleString("en-IN")}`}
             {!isProcessing && <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">→</div>}
           </button>
           
@@ -210,7 +239,7 @@ const CheckoutSummary = ({ onPlaceOrder, isProcessing }) => {
           { icon: ShieldCheck, label: "Trust Guaranteed" },
         ].map((badg, idx) => (
           <div key={idx} className="flex items-center gap-2 p-3 bg-card border border-border rounded-2xl shadow-sm">
-            <div className="w-6 h-6 rounded-full bg-primary/5 flex items-center justify-center text-primary flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-foreground flex-shrink-0">
               <badg.icon className="w-3.5 h-3.5" />
             </div>
             <span className="text-[10px] font-bold text-foreground leading-tight uppercase tracking-wider">{badg.label}</span>

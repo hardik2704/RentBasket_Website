@@ -1,5 +1,8 @@
 # DECISIONS.md — RentBasket Website
 
+> Authored by **Vedant Sinha** (internship at RentBasket). Part of a portfolio
+> record — see the repository [`README.md`](./README.md) for attribution.
+
 <!-- Append-only design decision log (Lecture 05).
      Format: date | decision | reason | rejected alternative | constraint.
      Never delete entries. Add new ones at the BOTTOM. -->

@@ -1,5 +1,8 @@
 # Post-Checkout Flow — Change Summary
 
+> Authored by **Vedant Sinha** (internship at RentBasket). Part of a portfolio
+> record — see the repository [`README.md`](./README.md) for attribution.
+
 A developer-facing summary of everything added/changed to build the **login/signup-first checkout → KYC → order confirmation** flow.
 
 - **Branch:** `Hardik-try` (mirror of `feat/checkout-login-signup-flow`, PR #5)

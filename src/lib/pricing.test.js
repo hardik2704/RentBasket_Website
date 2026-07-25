@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   discountedRent,
   unitSecurity,
+  unitSecurityOf,
   couponDiscount,
   cartBreakdown,
 } from "./pricing";
@@ -13,9 +14,21 @@ describe("pricing — per-unit primitives", () => {
     expect(discountedRent(1000, 0)).toBe(1000);
   });
 
-  it("unit security = list rent × security_multiple", () => {
-    expect(unitSecurity(769, 2)).toBe(1538); // live cart
-    expect(unitSecurity(420, 2)).toBe(840);
+  it("unit security = round(discounted rent × 1.18) × multiple", () => {
+    // arg is the DISCOUNTED monthly rent; GST is folded in, then × multiple.
+    expect(unitSecurity(769, 2)).toBe(1814); // round(769×1.18)=907, ×2
+    expect(unitSecurity(420, 2)).toBe(992); // round(420×1.18)=496, ×2
+  });
+
+  it("unitSecurityOf = (discounted_rent + GST) × multiple, off the per-product discount", () => {
+    // 769 @ 0% off → discounted 769 → round(769×1.18)=807?  (769×1.18=907.42 → 907) ×2 = 1814
+    expect(unitSecurityOf({ rent: 769, security_multiple: 2 })).toBe(1814);
+    expect(unitSecurityOf({ rent: 769, security_multiple: 0 })).toBe(0); // waived rec item
+    // 769 @ 30% off → discounted 538 → round(538×1.18)=635 ×2 = 1270
+    expect(unitSecurityOf({ rent: 769, percent_discount: 30, security_multiple: 2 })).toBe(1270);
+    // adv_security is intentionally ignored now (deposit is derived, not stored)
+    expect(unitSecurityOf({ rent: 769, adv_security: 1200 })).toBe(1814);
+    expect(unitSecurityOf({ rent: 769 })).toBe(1814); // default 2×
   });
 });
 
@@ -30,8 +43,8 @@ describe("pricing — verified against the live cart (lead 5383)", () => {
     expect(cartBreakdown(items).baseRent).toBe(1076);
   });
 
-  it("security total = ₹3076 (1538 × 2 items)", () => {
-    expect(cartBreakdown(items).security).toBe(3076);
+  it("security total = ₹2540 (per-unit (538+GST)×2 = 1270, × 2 items)", () => {
+    expect(cartBreakdown(items).security).toBe(2540);
   });
 
   it("full monthly + first-month breakdown", () => {
@@ -39,9 +52,9 @@ describe("pricing — verified against the live cart (lead 5383)", () => {
     expect(b.totalRent).toBe(1538); // 769 × 2
     expect(b.gst).toBe(194); // round(1076 × 0.18)
     expect(b.netMonthlyRent).toBe(1270); // 1076 + 194
-    expect(b.netFirstMonth).toBe(4346); // 1270 + 3076
-    expect(b.upfront).toBe(2173); // 50%
-    expect(b.payOnDelivery).toBe(2173);
+    expect(b.netFirstMonth).toBe(3810); // 1270 + 2540
+    expect(b.upfront).toBe(1905); // 50%
+    expect(b.payOnDelivery).toBe(1905);
   });
 });
 

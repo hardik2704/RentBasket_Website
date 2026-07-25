@@ -6,6 +6,7 @@ import { DURATION_OPTIONS } from "@/data/products";
 import { discountedRent, lineOf, gstAmount } from "@/lib/pricing";
 import { useProduct } from "@/hooks/useProducts";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const MONTHLY_KEYS = new Set([
   "3_months",
@@ -14,7 +15,7 @@ const MONTHLY_KEYS = new Set([
   "12_months",
 ]);
 const CartItemCard = ({ item }) => {
-  const { updateItem, removeFromCart } = useCart();
+  const { updateItem, removeFromCart, changeItemDuration, selectedDuration } = useCart();
   const [showDurationPicker, setShowDurationPicker] = useState(false);
   const pickerRef = useRef(null);
 
@@ -29,29 +30,38 @@ const CartItemCard = ({ item }) => {
       }
     };
     if (showDurationPicker) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
     }
   }, [showDurationPicker]);
 
   const handleDurationChange = (newDurationKey) => {
-    if (!product) return;
-    const basePrice = discountedRent(
-      product.pricing_by_duration[newDurationKey],
-      product.percent_discount
-    );
-    const newLabel = DURATION_OPTIONS.find((d) => d.key === newDurationKey)?.label || "";
-    updateItem(item.cartItemId, {
-      duration: newDurationKey,
-      durationLabel: newLabel,
-      rent: product.pricing_by_duration[newDurationKey],
-      price: basePrice,
-    });
     setShowDurationPicker(false);
+    if (newDurationKey === item.duration) return;
+    // Pricing for the new duration needs the product; until it loads, bail out
+    // rather than carry the old duration's rent onto the new plan.
+    if (!product) return;
+
+    // Moving to another duration shifts this line into a different cart group
+    // (and a different checkout). changeItemDuration handles the rent recalc and
+    // merges with any existing same-product line in the destination group.
+    const { moved, label } = changeItemDuration(item.cartItemId, newDurationKey, product);
+
+    // Per the agreed UX, the user stays on the group they were viewing — so when
+    // the item leaves that group, tell them where it went.
+    if (moved && newDurationKey !== selectedDuration) {
+      toast.success(`Moved to your ${label} plan`, {
+        description: `${item.name} is now in your ${label} cart.`,
+      });
+    }
   };
 
   const handleQuantityChange = (delta) => {
-    const newQty = Math.max(1, Math.min(10, item.quantity + delta));
+    if (delta < 0 && item.quantity <= 1) {
+      removeFromCart(item.cartItemId);
+      return;
+    }
+    const newQty = Math.min(10, item.quantity + delta);
     updateItem(item.cartItemId, { quantity: newQty });
   };
 
@@ -64,9 +74,9 @@ const CartItemCard = ({ item }) => {
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-soft hover:shadow-card transition-shadow">
-      <div className="p-4 md:p-5">
+      <div className="relative" ref={pickerRef}>
         {/* ── MOBILE LAYOUT ── */}
-        <div className="md:hidden">
+        <div className="p-4 md:hidden">
           <div className="flex gap-3 mb-3">
             {/* Thumbnail */}
             <Link
@@ -87,7 +97,7 @@ const CartItemCard = ({ item }) => {
             <div className="flex-1 min-w-0">
               <Link
                 to={`/product/${item.productId}`}
-                className="text-sm font-semibold text-foreground leading-snug line-clamp-2 hover:text-primary transition-colors block"
+                className="text-sm font-semibold text-foreground leading-snug line-clamp-2 hover:text-foreground transition-colors block"
               >
                 {item.name}
               </Link>
@@ -105,13 +115,13 @@ const CartItemCard = ({ item }) => {
           </div>
 
           {/* Controls Row */}
-          <div className="flex items-center gap-2 mb-3" ref={pickerRef}>
+          <div className="flex items-center gap-2 mb-3">
             {/* Duration Picker */}
             <div className="relative flex-1">
               <button
                 onClick={() => setShowDurationPicker(!showDurationPicker)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-sm font-medium bg-background transition-colors ${
-                  showDurationPicker ? "border-primary ring-2 ring-primary/10" : "border-border"
+                  showDurationPicker ? "border-foreground ring-2 ring-foreground/10" : "border-border"
                 }`}
               >
                 <span>{item.durationLabel || "1 Month"}</span>
@@ -124,7 +134,6 @@ const CartItemCard = ({ item }) => {
               <button
                 onClick={() => handleQuantityChange(-1)}
                 className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-secondary disabled:opacity-30"
-                disabled={item.quantity <= 1}
               >
                 <Minus className="w-3 h-3" />
               </button>
@@ -145,7 +154,7 @@ const CartItemCard = ({ item }) => {
               <span className="text-muted-foreground">Rent</span>
               <span className="flex items-center gap-1">
                 {line.listRentTotal > line.rentTotal && (
-                  <span className="line-through text-muted-foreground text-[10px]">₹{line.listRentTotal.toLocaleString("en-IN")}</span>
+                  <span className="text-muted-foreground text-[10px]">₹{line.listRentTotal.toLocaleString("en-IN")}</span>
                 )}
                 <span>₹{line.rentTotal.toLocaleString("en-IN")}{isMonthly ? "/mo" : ""}</span>
               </span>
@@ -164,17 +173,19 @@ const CartItemCard = ({ item }) => {
             </div>
             <div className="flex justify-between text-sm pt-1.5 border-t border-border/50">
               <span className="font-bold">Total</span>
-              <span className="font-bold text-primary">₹{lineTotal.toLocaleString("en-IN")}</span>
+              <span className="font-bold text-foreground">₹{lineTotal.toLocaleString("en-IN")}</span>
             </div>
           </div>
         </div>
 
         {/* ── DESKTOP LAYOUT ── */}
-        <div className="hidden md:flex gap-5">
+        <div className="hidden md:flex min-h-[140px]">
+          {/* Left: configuration section (white background, padded) */}
+          <div className="p-5 flex-1 flex gap-5">
           {/* Thumbnail */}
           <Link
             to={`/product/${item.productId}`}
-            className="w-28 h-28 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-border/50 block hover:border-primary/30 transition-colors"
+            className="w-28 h-28 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-border/50 block hover:border-foreground/35 transition-colors"
           >
             <img
               src={resolvedImage}
@@ -192,7 +203,7 @@ const CartItemCard = ({ item }) => {
               <div>
                 <Link
                   to={`/product/${item.productId}`}
-                  className="text-base font-semibold text-foreground leading-snug hover:text-primary transition-colors block"
+                  className="text-base font-semibold text-foreground leading-snug hover:text-foreground transition-colors block"
                 >
                   {item.name}
                 </Link>
@@ -209,13 +220,13 @@ const CartItemCard = ({ item }) => {
             </div>
 
             {/* Controls Row */}
-            <div className="flex items-center gap-4 mt-3" ref={pickerRef}>
+            <div className="flex items-center gap-4 mt-3">
               {/* Duration Picker */}
               <div className="relative">
                 <button
                   onClick={() => setShowDurationPicker(!showDurationPicker)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium bg-background transition-all ${
-                    showDurationPicker ? "border-primary ring-2 ring-primary/10" : "border-border hover:border-primary/40"
+                    showDurationPicker ? "border-foreground ring-2 ring-foreground/10" : "border-border hover:border-foreground/35"
                   }`}
                 >
                   <span>{item.durationLabel || "1 Month"}</span>
@@ -230,8 +241,7 @@ const CartItemCard = ({ item }) => {
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors disabled:opacity-30"
-                    disabled={item.quantity <= 1}
-                  >
+                      >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
                   <span className="w-10 text-center text-sm font-semibold select-none">{item.quantity}</span>
@@ -256,12 +266,13 @@ const CartItemCard = ({ item }) => {
               </div>
             </div>
           </div>
+          </div>
 
-          {/* Right Pricing */}
-          <div className="w-48 flex-shrink-0 text-right space-y-1">
+          {/* Right: pricing invoice panel (gray background, padded, left border) */}
+          <div className="w-52 flex-shrink-0 bg-secondary/35 p-5 border-l border-border/50 text-right flex flex-col justify-between space-y-1">
             <div className="text-lg font-bold text-foreground flex flex-col items-end">
               {line.listRentTotal > line.rentTotal && (
-                <span className="line-through text-muted-foreground text-xs font-normal">₹{line.listRentTotal.toLocaleString("en-IN")}/mo</span>
+                <span className="text-muted-foreground text-xs font-normal">₹{line.listRentTotal.toLocaleString("en-IN")}/mo</span>
               )}
               <span>₹{line.rentTotal.toLocaleString("en-IN")}{isMonthly ? <span className="text-sm font-normal text-muted-foreground">/mo</span> : ""}</span>
             </div>
@@ -277,7 +288,7 @@ const CartItemCard = ({ item }) => {
             </div>
             <div className="pt-2 border-t border-border/50 mt-2">
               <span className="text-[10px] text-muted-foreground block mb-0.5">Due Today</span>
-              <span className="text-xl font-bold text-primary">₹{lineTotal.toLocaleString("en-IN")}</span>
+              <span className="text-xl font-bold text-foreground">₹{lineTotal.toLocaleString("en-IN")}</span>
             </div>
           </div>
         </div>
@@ -311,8 +322,8 @@ const CartItemCard = ({ item }) => {
                         onClick={() => handleDurationChange(d.key)}
                         className={`relative flex flex-col items-center py-2.5 px-1.5 rounded-xl border text-center transition-all ${
                           isSelected
-                            ? "border-primary bg-primary/5 text-primary ring-1 ring-primary/20"
-                            : "border-border text-muted-foreground hover:border-primary/40 hover:bg-secondary/30"
+                            ? "border-foreground bg-foreground/5 text-foreground ring-1 ring-foreground/20"
+                            : "border-border text-muted-foreground hover:border-foreground/35 hover:bg-secondary/30"
                         }`}
                       >
                         {is12m && (
