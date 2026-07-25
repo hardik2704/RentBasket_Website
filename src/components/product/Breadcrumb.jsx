@@ -18,7 +18,7 @@ const Breadcrumb = ({ product }) => {
           <li key={i} className="flex items-center gap-1.5">
             <Link
               to={crumb.to}
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               {crumb.label}
             </Link>

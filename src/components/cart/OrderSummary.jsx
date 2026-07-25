@@ -1,54 +1,40 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle, Tag, ShieldCheck, Lock, Truck, Wrench, CreditCard, Bookmark, Sparkles } from "lucide-react";
+import { CheckCircle, Tag, ShieldCheck, Lock, Truck, Wrench, CreditCard } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { toast } from "sonner";
 import { cartBreakdown, lineOf } from "@/lib/pricing";
+import { DURATION_OPTIONS } from "@/data/products";
 
 const MONTHLY_KEYS = new Set(["3_months", "6_months", "9_months", "12_months"]);
+const planLabel = (key) => DURATION_OPTIONS.find((d) => d.key === key)?.label || "";
 
 const OrderSummary = ({ onCheckout }) => {
-  const { cartItems, getCartItemCount, coupon, applyCoupon, removeCoupon } = useCart();
-  const [couponCode, setCouponCode] = useState(coupon?.code || "");
+  // The cart is split by duration; the summary, totals and checkout apply to the
+  // ACTIVE duration group only (each group is its own order).
+  const { activeItems, getCartItemCount, coupon, selectedDuration, durationsInCart } = useCart();
+  const hasMultiplePlans = durationsInCart.length > 1;
 
-  const itemCount = getCartItemCount();
-  const b = cartBreakdown(cartItems, coupon);
-  const hasMonthlyItems = cartItems.some((item) => MONTHLY_KEYS.has(item.duration));
+  const itemCount = getCartItemCount(selectedDuration);
+  const b = cartBreakdown(activeItems, coupon);
 
-  const handleApplyCoupon = () => {
-    if (!couponCode.trim()) return;
-    const success = applyCoupon(couponCode);
-    if (success) {
-      toast.success("Coupon applied!");
-    } else {
-      toast.error("Invalid coupon code");
-    }
-  };
-
-  const handleRemoveCoupon = () => {
-    removeCoupon();
-    setCouponCode("");
-  };
-
-  if (cartItems.length === 0) return null;
+  if (activeItems.length === 0) return null;
 
   return (
     <div className="bg-card border border-border rounded-2xl shadow-soft lg:sticky lg:top-24">
       {/* Header */}
       <div className="px-5 pt-5 pb-4 md:px-6 md:pt-6">
         <h3 className="text-lg font-bold flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-primary" />
+          <span className="w-2 h-2 rounded-full bg-foreground/80" />
           Order Summary
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
-          {itemCount} {itemCount === 1 ? "item" : "items"} in your cart
+          {itemCount} {itemCount === 1 ? "item" : "items"} in your {selectedDuration ? `${planLabel(selectedDuration)} ` : ""}plan
         </p>
       </div>
 
       <div className="px-5 pb-5 md:px-6 md:pb-6 space-y-4">
         {/* Per-item breakdown */}
         <div className="space-y-2">
-          {cartItems.map((item) => {
+          {activeItems.map((item) => {
             const isM = MONTHLY_KEYS.has(item.duration);
             const line = lineOf(item);
             return (
@@ -58,7 +44,7 @@ const OrderSummary = ({ onCheckout }) => {
                 </span>
                 <span className="font-medium whitespace-nowrap flex items-center gap-1">
                   {line.listRentTotal > line.rentTotal && (
-                    <span className="line-through text-muted-foreground text-[10px]">₹{line.listRentTotal.toLocaleString("en-IN")}</span>
+                    <span className="text-muted-foreground text-[10px]">₹{line.listRentTotal.toLocaleString("en-IN")}</span>
                   )}
                   <span>₹{line.rentTotal.toLocaleString("en-IN")}{isM && "/mo"}</span>
                 </span>
@@ -70,7 +56,7 @@ const OrderSummary = ({ onCheckout }) => {
           {/* Total Rent (list total) */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Total Rent</span>
-            <span className="line-through text-muted-foreground text-xs">
+            <span className="text-muted-foreground text-xs">
               ₹{b.totalRent.toLocaleString("en-IN")}/mo
             </span>
           </div>
@@ -145,52 +131,16 @@ const OrderSummary = ({ onCheckout }) => {
         </div>
 
         {/* Grand Total */}
-        <div className="border-t-2 border-primary/20 pt-4 bg-primary/[0.01] -mx-5 px-5 pb-2">
+        <div className="border-t border-border pt-4 bg-secondary/10 -mx-5 px-5 pb-2">
           <div className="flex items-baseline justify-between mb-1">
             <span className="text-base font-bold">Total (First Month)</span>
-            <span className="text-2xl font-black text-primary tracking-tight">
+            <span className="text-2xl font-black text-foreground tracking-tight">
               ₹{b.netFirstMonth.toLocaleString("en-IN")}
             </span>
           </div>
           <p className="text-sm md:text-base text-muted-foreground mt-2 leading-relaxed">
             Pay <strong className="text-foreground">₹{b.upfront.toLocaleString("en-IN")}</strong> now (50%), and <strong className="text-foreground">₹{b.payOnDelivery.toLocaleString("en-IN")}</strong> on delivery.
           </p>
-        </div>
-
-        {/* Coupon Input */}
-        <div className="pt-4 border-t border-border/50">
-          <p className="text-xs font-medium text-muted-foreground mb-2">Have a coupon?</p>
-          {coupon ? (
-            <div className="flex items-center justify-between bg-success-muted border border-success-border rounded-xl px-4 py-2.5">
-              <div className="flex items-center gap-2 text-success-muted-foreground text-sm font-medium">
-                <Tag className="w-4 h-4" />
-                {coupon.code} applied
-              </div>
-              <button
-                onClick={handleRemoveCoupon}
-                className="text-xs text-red-500 hover:underline font-medium"
-              >
-                Remove
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                placeholder="Enter coupon code"
-                className="flex-1 px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background"
-                onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
-              />
-              <button
-                onClick={handleApplyCoupon}
-                className="px-4 py-2.5 rounded-xl border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-colors"
-              >
-                Apply
-              </button>
-            </div>
-          )}
         </div>
 
         {/* CTAs */}
@@ -200,8 +150,13 @@ const OrderSummary = ({ onCheckout }) => {
             onClick={onCheckout}
           >
             <Lock className="w-4 h-4" />
-            Proceed to Checkout
+            {hasMultiplePlans ? `Checkout ${planLabel(selectedDuration)} plan` : "Proceed to Checkout"}
           </button>
+          {hasMultiplePlans && (
+            <p className="text-[11px] text-muted-foreground text-center">
+              You have {durationsInCart.length} rental plans — each is checked out as a separate order.
+            </p>
+          )}
           <Link
             to="/catalog"
             className="btn-outline w-full py-3 text-sm text-center block"
@@ -209,8 +164,8 @@ const OrderSummary = ({ onCheckout }) => {
             Continue Browsing
           </Link>
           <a
-            href="tel:+919958858473"
-            className="block text-center text-xs text-muted-foreground hover:text-primary transition-colors mt-1"
+            href="tel:+919959858473"
+            className="block text-center text-xs text-muted-foreground hover:text-foreground transition-colors mt-1"
           >
             Need help choosing more items?
           </a>

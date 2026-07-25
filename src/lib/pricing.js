@@ -8,6 +8,10 @@
  * Flow:  list rent → per-product discount → base rent → (whole-cart coupon)
  *        → +18% GST → net monthly rent → + refundable security → net first month
  *        → 50% upfront / 50% on delivery.
+ *
+ * Refundable security = round(discounted_rent × 1.18) × security_multiple, per
+ * item (off the per-product discount, NOT the coupon). Confirmed 2026-06-13 to
+ * match the backend's confirm-proposal `monthly_rent_after_gst × multiple`.
  */
 
 export const GST_RATE = 0.18; // 18% GST on the discounted, post-coupon base rent
@@ -21,40 +25,65 @@ export const discountedRent = (listRent, percentDiscount = 0) =>
 
 export const DEFAULT_SECURITY_MULTIPLE = 2;
 
-/** Refundable security for one unit: list rent × security_multiple. */
-export const unitSecurity = (listRent, securityMultiple = DEFAULT_SECURITY_MULTIPLE) =>
-  round(listRent * securityMultiple);
+/**
+ * Refundable security for one unit.
+ *
+ * Model (confirmed 2026-06-13, matches the backend's confirm-proposal):
+ *   security = round(discounted_rent × (1 + GST)) × security_multiple
+ *            = monthly_rent_after_gst × multiple
+ *
+ * Per item, off the per-product discount only (the whole-cart coupon does NOT
+ * reduce the deposit). Round the GST-inclusive monthly rent to whole rupees
+ * BEFORE multiplying, so this equals the backend's `monthly_rent_after_gst ×
+ * multiple` to the rupee (e.g. sofa: round(685 × 1.18)=808, × 2 = 1616).
+ *
+ * @param {number} discRent  discounted monthly rent for one unit (post per-product discount, pre-GST)
+ * @param {number} securityMultiple
+ */
+export const unitSecurity = (discRent, securityMultiple = DEFAULT_SECURITY_MULTIPLE) =>
+  round(discRent * (1 + GST_RATE)) * securityMultiple;
+
+/**
+ * Per-unit refundable security for a cart item — the ONE resolution used by
+ * both the UI breakdown (lineOf) and the proposal API payload, so the deposit
+ * the customer sees is exactly the deposit sent to the backend.
+ *
+ * Resolves the discounted rent the same way lineOf does (precomputed
+ * `rent_with_discount` if present, else list rent × per-product discount), adds
+ * GST, then applies the multiple.
+ *
+ * Security resolution order for the MULTIPLE:
+ *   1. security_multiple (from the API)
+ *   2. DEFAULT_SECURITY_MULTIPLE — last resort so the site never shows ₹0
+ * (`adv_security` is intentionally NOT used — the deposit is derived, not a
+ *  stored per-product rupee value; see rentbasket-security-deposit-discrepancy.)
+ */
+export const unitSecurityOf = (item) => {
+  const listRent = Number(item.rent ?? item.listRent ?? 0);
+  const pd = Number(item.percent_discount ?? item.percentDiscount ?? 0);
+  const discRent =
+    item.rent_with_discount != null
+      ? Number(item.rent_with_discount)
+      : discountedRent(listRent, pd);
+  const mult = item.security_multiple ?? item.securityMultiple ?? DEFAULT_SECURITY_MULTIPLE;
+  return unitSecurity(discRent, Number(mult));
+};
 
 /**
  * Normalise a cart item to the numbers the math needs. Accepts the live API
  * shape (`rent`, `percent_discount`, `security_multiple`, `amenity_count`) and
  * also honours server-precomputed fields (`adv_security`, `rent_with_discount`)
  * when present — so the same module works for live data and the bundled mock.
- *
- * Security resolution order:
- *   1. security_multiple × list rent — preferred; uses the per-product multiplier from the API
- *   2. adv_security / security      — pre-computed API value, used when security_multiple is absent
- *   3. DEFAULT_SECURITY_MULTIPLE × rent — last resort so the site never shows ₹0
  */
 export const lineOf = (item) => {
   const qty = Math.max(1, Number(item.quantity ?? item.amenity_count ?? 1));
   const listRent = Number(item.rent ?? item.listRent ?? 0);
   const pd = Number(item.percent_discount ?? item.percentDiscount ?? 0);
-  const mult = item.security_multiple ?? item.securityMultiple;
   const disc =
     item.rent_with_discount != null
       ? Number(item.rent_with_discount)
       : discountedRent(listRent, pd);
-  const precomputedSec = item.adv_security ?? item.security;
-  const secFromApi = precomputedSec != null ? Number(precomputedSec) : null;
-  let sec;
-  if (mult != null) {
-    sec = unitSecurity(listRent, Number(mult));
-  } else if (secFromApi != null) {
-    sec = secFromApi;
-  } else {
-    sec = unitSecurity(listRent, DEFAULT_SECURITY_MULTIPLE);
-  }
+  const sec = unitSecurityOf(item);
   return {
     qty,
     listRent,

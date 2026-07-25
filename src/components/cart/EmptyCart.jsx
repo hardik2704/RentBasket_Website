@@ -6,16 +6,15 @@ const EmptyCart = () => {
     <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center">
       <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center mb-6 relative">
         <ShoppingBag className="w-10 h-10 text-muted-foreground" />
-        <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+        <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
           <span className="text-lg">🛒</span>
         </div>
       </div>
       <h2 className="text-xl md:text-2xl font-display font-bold mb-2">
-        Your cart is empty
+        Your basket is empty
       </h2>
       <p className="text-sm md:text-base text-muted-foreground max-w-md mb-8 leading-relaxed">
-        Explore furniture and appliances for flexible rental durations — from 1
-        day to 12 months. Free delivery, installation, and maintenance included.
+        Explore furniture and appliances for flexible rental durations. Free delivery and installation included.
       </p>
       <Link
         to="/catalog"
@@ -26,8 +25,8 @@ const EmptyCart = () => {
       </Link>
       <p className="text-xs text-muted-foreground mt-4">
         Have a question?{" "}
-        <a href="tel:+919958858473" className="text-primary hover:underline">
-          Call us at +91 9958858473
+        <a href="tel:+919959858473" className="text-foreground font-semibold hover:underline">
+          Call us at +91 9959858473
         </a>
       </p>
     </div>

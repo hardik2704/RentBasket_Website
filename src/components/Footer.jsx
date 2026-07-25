@@ -25,7 +25,7 @@ const Footer = () => {
                 <li>
                   <Link
                     to="/catalog"
-                    className="hover:text-primary transition-colors font-sans"
+                    className="hover:text-primary hover:translate-x-0.5 transition-all duration-200 font-sans inline-block"
                   >
                     Browse Products
                   </Link>
@@ -33,7 +33,7 @@ const Footer = () => {
                 <li>
                   <Link
                     to="/about"
-                    className="hover:text-primary transition-colors font-sans"
+                    className="hover:text-primary hover:translate-x-0.5 transition-all duration-200 font-sans inline-block"
                   >
                     About Us
                   </Link>
@@ -41,7 +41,7 @@ const Footer = () => {
                 <li>
                   <Link
                     to="/faqs"
-                    className="hover:text-primary transition-colors font-sans"
+                    className="hover:text-primary hover:translate-x-0.5 transition-all duration-200 font-sans inline-block"
                   >
                     FAQs
                   </Link>
@@ -49,7 +49,7 @@ const Footer = () => {
                 <li>
                   <Link
                     to="/terms-n-conditions"
-                    className="hover:text-primary transition-colors font-sans"
+                    className="hover:text-primary hover:translate-x-0.5 transition-all duration-200 font-sans inline-block"
                   >
                     Terms &amp; Conditions
                   </Link>
@@ -57,7 +57,7 @@ const Footer = () => {
                 <li>
                   <Link
                     to="/shipping-returns"
-                    className="hover:text-primary transition-colors font-sans"
+                    className="hover:text-primary hover:translate-x-0.5 transition-all duration-200 font-sans inline-block"
                   >
                     Shipping &amp; Returns
                   </Link>
@@ -65,7 +65,7 @@ const Footer = () => {
                 <li>
                   <Link
                     to="/contact"
-                    className="hover:text-primary transition-colors font-sans"
+                    className="hover:text-primary hover:translate-x-0.5 transition-all duration-200 font-sans inline-block"
                   >
                     Contact Us
                   </Link>
@@ -94,11 +94,11 @@ const Footer = () => {
                   </span>
                 </Link>
                 <a
-                  href="tel:+919958858473"
+                  href="tel:+919959858473"
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
                   <Phone className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-sans">+91 9958858473</span>
+                  <span className="font-sans">+91 9959858473</span>
                 </a>
               </div>
             </div>
@@ -133,7 +133,7 @@ const Footer = () => {
         {/* Social Icons & Copyright */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground text-center sm:text-left font-sans order-2 sm:order-1">
-            © 2026 RentBasket. All rights reserved.
+            © 2023-2026 RentBasket, a brand of IG RentOK Private Limited. All rights reserved.
           </p>
           <div className="order-1 sm:order-2 shrink-0">
             <img

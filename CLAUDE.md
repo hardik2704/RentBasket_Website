@@ -16,7 +16,7 @@ Drop this file in the root of your RentBasket project. Claude Code reads it auto
 - TanStack Query where data fetching is used
 
 ## Design system
-- **Type**: Playfair Display (display) + Inter (body). Global heading rule applies `font-display` in `src/index.css`.
+- **Type**: Plus Jakarta Sans (display, weight 500) + Quicksand (body, weight 500). Global heading rule applies `font-display` in `src/index.css`. The word "different" in the WhatMakesDifferent section uses a separate script accent font (`font-script` → Playwrite US Trad) — do not change it when touching global type.
 - **Colors / tokens**: HSL CSS variables in `src/index.css` (`:root`). Use semantic classes (`bg-primary`, `text-muted-foreground`, `bg-cream/50`, `text-success`, `btn-gradient-coral`, etc.) — avoid raw hex in JSX unless extending tokens first.
 - **Spacing**: 4px base. Use Tailwind's default scale.
 - **Components**: Build from primitives in `components/ui/`. Prefer shared utilities (`btn-primary`, `btn-outline`, `btn-gradient-coral`, `gradient-coral`, `section-container`) over one-off inline styles.

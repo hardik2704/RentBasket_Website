@@ -1,145 +1,259 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useProducts } from "@/hooks/useProducts";
+import ProductImage from "@/components/ui/ProductImage";
+import { discountedRent } from "@/lib/pricing";
 
-import img1 from "@/assets/Furniture/1.png";
-import img2 from "@/assets/Furniture/2.png";
-import img3 from "@/assets/Furniture/3.png";
-import img4 from "@/assets/Furniture/4.png";
-import img5 from "@/assets/Furniture/5.png";
-import img6 from "@/assets/Furniture/6.png";
-import img7 from "@/assets/Furniture/7.png";
-import img8 from "@/assets/Furniture/8.png";
-import img9 from "@/assets/Furniture/9.png";
-import img10 from "@/assets/Furniture/10.png";
-
-import app1 from "@/assets/Appliances/10.png";
-import app2 from "@/assets/Appliances/11.png";
-import app3 from "@/assets/Appliances/12.png";
-import app4 from "@/assets/Appliances/13.png";
-import app5 from "@/assets/Appliances/14.png";
-import app6 from "@/assets/Appliances/15.png";
-
-import best1 from "@/assets/Bestsellers/1.png";
-import best2 from "@/assets/Bestsellers/3.png";
-import best3 from "@/assets/Bestsellers/5.png";
-import best4 from "@/assets/Bestsellers/8.png";
-import best5 from "@/assets/Bestsellers/9.png";
-import best6 from "@/assets/Bestsellers/10.png";
-import best7 from "@/assets/Bestsellers/11.png";
-import best8 from "@/assets/Bestsellers/12.png";
-
-const categoryData = {
-  Furniture: [
-    { id: 1, src: img1, name: "Modern Chair" },
-    { id: 2, src: img2, name: "Wooden Chair" },
-    { id: 3, src: img3, name: "Office Chair" },
-    { id: 4, src: img4, name: "Dining Chair" },
-    { id: 5, src: img5, name: "Accent Chair" },
-    { id: 6, src: img6, name: "Comfort Sofa" },
-    { id: 7, src: img7, name: "Study Table" },
-    { id: 8, src: img8, name: "Bookshelf" },
-    { id: 9, src: img9, name: "Bed Frame" },
-    { id: 10, src: img10, name: "Wardrobe" },
-  ],
-  Appliances: [
-    { id: 1, src: app1, name: "Smart Blender" },
-    { id: 2, src: app2, name: "Coffee Maker" },
-    { id: 3, src: app3, name: "Air Purifier" },
-    { id: 4, src: app4, name: "Microwave Oven" },
-    { id: 5, src: app5, name: "4-Slice Toaster" },
-    { id: 6, src: app6, name: "Electric Kettle" },
-  ],
-  Combos: [
-    { id: 1, src: img2, name: "Living Room Combo" },
-    { id: 2, src: app1, name: "Kitchen Starter" },
-    { id: 3, src: img4, name: "Bedroom Combo" },
-    { id: 4, src: app2, name: "Studio Setup" },
-    { id: 5, src: img7, name: "Work-from-Home Combo" },
-  ],
-  Bestsellers: [
-    { id: 1, src: best1, name: "Best Seller Chair" },
-    { id: 2, src: best2, name: "Popular Sofa" },
-    { id: 3, src: best3, name: "Coffee Maker Pro" },
-    { id: 4, src: best4, name: "Premium Mirror" },
-    { id: 5, src: best5, name: "Luxury Accent Chair" },
-    { id: 6, src: best6, name: "Top-rated Sofa" },
-    { id: 7, src: best7, name: "Hero Bedframe" },
-    { id: 8, src: best8, name: "Customer Favourite" },
-  ],
+// Cheapest post-discount monthly rent across a product's available durations.
+// Mirrors ProductCard's pricing (pricing_by_duration + percent_discount).
+// Returns null if the product has no priced duration.
+const getStartingPrice = (product) => {
+  const pricing = product.pricing_by_duration ?? {};
+  const prices = Object.values(pricing)
+    .filter((v) => (v ?? 0) > 0)
+    .map((v) => discountedRent(v, product.percent_discount));
+  return prices.length ? Math.min(...prices) : null;
 };
 
-/** Maps home hero tabs to catalog CategoryTabs values */
-const HOME_TO_CATALOG_CATEGORY = {
-  Furniture: "Furniture",
-  Appliances: "Appliances",
-  Combos: "Complete Home Setup",
-  Bestsellers: "Bestsellers",
-};
+// Curated hero carousel — a fixed set of 8 real catalog products, pinned by their
+// live amenity_type_id (the API is the source of truth, so the images, names and
+// links stay in sync with the catalog instead of being hardcoded local assets).
+// Order here is the order shown in the strip.
+const FEATURED_PRODUCT_IDS = [
+  "1054", // Premium Upholstered Queen Double Bed - Storage
+  "36",   // Double Door Fridge
+  "1036", // 6-Seater Sheesham Wood Dining Table (Cushioned)
+  "13",   // Fully Automatic Washing Machine
+  "41",   // Premium Revolving Chair
+  "16",   // Microwave (Solo) 20 L
+  "1041", // 7-Seater L-Shaped Sofa with Center Table & 2 Puffies - Green
+  "15",   // Water Purifier
+];
 
-const catalogHref = (homeCategory) => {
-  const catalogCategory =
-    HOME_TO_CATALOG_CATEGORY[homeCategory] ?? "Furniture";
-  return `/catalog?category=${encodeURIComponent(catalogCategory)}`;
-};
+// Target number of cards in the strip — matches the curated list length.
+const TARGET_CARD_COUNT = FEATURED_PRODUCT_IDS.length;
 
-const FurnitureGallery = ({ activeCategory = "Furniture" }) => {
+/** Square skeleton card shown per-slot while the catalog is loading. */
+const GallerySkeleton = () => (
+  <div className="flex gap-4 md:gap-6 overflow-hidden pb-4">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <div
+        key={i}
+        className="shrink-0 w-[210px] md:w-[250px] h-[300px] md:h-[350px] rounded-2xl bg-secondary animate-pulse shadow-soft"
+      />
+    ))}
+  </div>
+);
+
+// Continuous auto-scroll speed, in px/second.
+const AUTO_SPEED = 40;
+
+const FurnitureGallery = () => {
+  const { data: products = [], isLoading } = useProducts();
   const [autoScroll, setAutoScroll] = useState(true);
-  const containerRef = useRef(null);
-  const intervalRef = useRef(null);
+  const trackRef = useRef(null);
+  const rafRef = useRef(null);
+  const resumeTimeoutRef = useRef(null);
 
-  const items = categoryData[activeCategory] || categoryData.Furniture;
+  // Resolve the curated list to real products, then make it fail-safe.
+  //
+  // Hardik's 8 pinned products are ALWAYS shown first, in order, whenever they
+  // exist in the catalog. The fallback below is purely a safety net for DB drift
+  // (a SKU retired, re-seeded, or renumbered): any pinned ID that's missing would
+  // otherwise leave the strip short — or empty if a bulk re-seed wipes all 8. So
+  // we backfill only the *missing* slots with trending products (skipping any
+  // already shown) to keep the strip full at 8. In the normal case where all 8
+  // exist, the backfill contributes nothing and you see exactly Hardik's list.
+  const items = useMemo(() => {
+    const byId = new Map(products.map((p) => [String(p.id), p]));
 
-  // Auto-scroll horizontally; loops back to start when reaching the end.
+    // 1. The curated picks that actually exist right now, in Hardik's order.
+    const curated = FEATURED_PRODUCT_IDS
+      .map((id) => byId.get(id))
+      .filter(Boolean);
+
+    if (curated.length >= TARGET_CARD_COUNT) return curated;
+
+    // 2. Backfill only the missing slots from trending products (the API's
+    //    is_trending flag), excluding anything already in the strip.
+    const shown = new Set(curated.map((p) => String(p.id)));
+    const backfill = products.filter(
+      (p) => p.is_trending && !shown.has(String(p.id))
+    );
+
+    // 3. Last-resort widen: if there still aren't enough trending products,
+    //    fall back to any remaining catalog product so the strip never goes
+    //    empty (API up but no trending items flagged).
+    if (curated.length + backfill.length < TARGET_CARD_COUNT) {
+      const backfillIds = new Set(backfill.map((p) => String(p.id)));
+      const rest = products.filter(
+        (p) => !shown.has(String(p.id)) && !backfillIds.has(String(p.id))
+      );
+      backfill.push(...rest);
+    }
+
+    return [...curated, ...backfill].slice(0, TARGET_CARD_COUNT);
+  }, [products]);
+
+  // True circular strip: the item list is rendered twice back-to-back and
+  // moved with a CSS transform (not scrollLeft). Because both halves are
+  // pixel-identical, the offset can be wrapped with a modulo the instant it
+  // passes one set's width — there's no "end" to reach and no reset to
+  // disguise, so the motion never has a seam to hide. This still renders a
+  // finite, fixed number of nodes (2x the list) rather than an unbounded/
+  // infinitely-growing DOM.
+  const loopItems = useMemo(
+    () => (items.length > 0 ? [...items, ...items] : items),
+    [items]
+  );
+
+  // Current transform offset, in px. A ref (not state) because it updates
+  // every animation frame — putting it in state would re-render constantly.
+  const offsetRef = useRef(0);
+  const setWidthRef = useRef(0);
+
+  const applyOffset = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.style.transform = `translateX(-${offsetRef.current}px)`;
+  };
+
+  // Measures one copy of the list (gap-inclusive) so the wrap point is exact.
   useEffect(() => {
-    if (!autoScroll) return;
-    intervalRef.current = setInterval(() => {
-      const c = containerRef.current;
-      if (!c) return;
-      const max = c.scrollWidth - c.clientWidth;
-      const next = c.scrollLeft + 320;
-      c.scrollTo({ left: next >= max - 4 ? 0 : next, behavior: "smooth" });
-    }, 3500);
-    return () => clearInterval(intervalRef.current);
-  }, [autoScroll, activeCategory]);
+    const track = trackRef.current;
+    if (!track || items.length === 0) return;
+    const cards = track.children;
+    if (cards.length < items.length * 2) return;
+    const first = cards[0];
+    const firstOfSecondSet = cards[items.length];
+    setWidthRef.current = firstOfSecondSet.offsetLeft - first.offsetLeft;
+  }, [items, loopItems]);
 
-  // Reset scroll position when switching categories.
+  // Continuous rAF-driven scroll — no discrete jumps, so there's nothing to
+  // visibly "snap." The offset wraps via modulo against one set's width,
+  // which is invisible because both copies are identical.
   useEffect(() => {
-    containerRef.current?.scrollTo({ left: 0, behavior: "smooth" });
-  }, [activeCategory]);
+    if (!autoScroll || items.length === 0) return;
+    let last = performance.now();
+    const tick = (now) => {
+      const dt = now - last;
+      last = now;
+      const setWidth = setWidthRef.current;
+      if (setWidth > 0) {
+        offsetRef.current = (offsetRef.current + AUTO_SPEED * (dt / 1000)) % setWidth;
+        applyOffset();
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [autoScroll, items.length]);
 
   const nudge = (dir) => {
     setAutoScroll(false);
-    const c = containerRef.current;
-    if (!c) return;
-    c.scrollBy({ left: dir * 360, behavior: "smooth" });
-    setTimeout(() => setAutoScroll(true), 8000);
+    clearTimeout(resumeTimeoutRef.current);
+    const setWidth = setWidthRef.current;
+    if (setWidth > 0) {
+      const cardStep = setWidth / items.length;
+      offsetRef.current =
+        ((offsetRef.current + dir * cardStep) % setWidth + setWidth) % setWidth;
+      applyOffset();
+    }
+    resumeTimeoutRef.current = setTimeout(() => setAutoScroll(true), 2000);
+  };
+
+  // Manual drag/swipe: same offset + modulo wrap as the auto-loop and the
+  // arrow buttons, so all three input methods move through the same
+  // seamless circular track.
+  const dragRef = useRef(null);
+
+  const pointerX = (e) => (e.touches ? e.touches[0].clientX : e.clientX);
+
+  const onDragStart = (e) => {
+    setAutoScroll(false);
+    clearTimeout(resumeTimeoutRef.current);
+    dragRef.current = { startX: pointerX(e), startOffset: offsetRef.current };
+  };
+
+  const onDragMove = (e) => {
+    if (!dragRef.current) return;
+    const setWidth = setWidthRef.current;
+    if (setWidth <= 0) return;
+    const delta = dragRef.current.startX - pointerX(e);
+    offsetRef.current =
+      ((dragRef.current.startOffset + delta) % setWidth + setWidth) % setWidth;
+    applyOffset();
+  };
+
+  const onDragEnd = () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    resumeTimeoutRef.current = setTimeout(() => setAutoScroll(true), 2000);
   };
 
   return (
-    <section className="bg-cream/40 pt-0 pb-8 md:pb-10 -mt-1">
+    <section className="bg-cream/40 pt-0 pb-4 md:pb-10 -mt-1">
       <div className="section-container">
+        <h2 className="font-display text-xl sm:text-2xl font-semibold text-foreground tracking-tight mb-4 md:mb-6">
+          What people are renting in Gurgaon &amp; Noida
+        </h2>
         {/* Catalog scroll */}
         <div className="relative">
-          <div
-            ref={containerRef}
-            className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            {items.map((item) => (
-              <Link
-                to={catalogHref(activeCategory)}
-                key={`${activeCategory}-${item.id}`}
-                className="group shrink-0 snap-start w-[220px] md:w-[260px] h-[360px] md:h-[440px] rounded-2xl overflow-hidden shadow-elevated bg-white hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.18)] hover:-translate-y-1 transition-all duration-300"
+          {/* Right-edge fade to hint at more content */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-4 w-16 z-10 bg-gradient-to-l from-cream/60 to-transparent" />
+
+          {isLoading ? (
+            <GallerySkeleton />
+          ) : (
+            <div className="overflow-hidden pb-4">
+              <div
+                ref={trackRef}
+                className="flex gap-4 md:gap-6 w-max will-change-transform"
+                onTouchStart={onDragStart}
+                onTouchMove={onDragMove}
+                onTouchEnd={onDragEnd}
+                onMouseDown={onDragStart}
+                onMouseMove={onDragMove}
+                onMouseUp={onDragEnd}
+                onMouseLeave={onDragEnd}
               >
-                <img
-                  src={item.src}
-                  alt={item.name}
-                  className="h-full w-full object-contain block group-hover:scale-[1.02] transition-transform duration-500"
-                />
-              </Link>
-            ))}
-          </div>
+                {loopItems.map((item, i) => {
+                  const startingPrice = getStartingPrice(item);
+                  return (
+                    <Link
+                      to={`/product/${item.id}`}
+                      key={i < items.length ? item.id : `${item.id}-dup`}
+                      draggable={false}
+                      className="group shrink-0 w-[210px] md:w-[250px] flex flex-col bg-white border border-border/40 rounded-2xl overflow-hidden shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-300"
+                    >
+                      {/* Product image */}
+                      <div className="h-[220px] md:h-[260px] w-full bg-muted/5 flex items-center justify-center p-3 border-b border-border/20 overflow-hidden shrink-0">
+                        <ProductImage
+                          src={item.images?.[0] || item.image}
+                          alt={item.name}
+                          draggable={false}
+                          className="h-full w-full object-contain block group-hover:scale-[1.03] transition-transform duration-500 pointer-events-none"
+                        />
+                      </div>
+
+                      {/* Product info */}
+                      <div className="p-4 flex flex-col gap-1 text-left">
+                        <h3 className="font-display font-semibold text-foreground text-sm truncate leading-snug">
+                          {item.name}
+                        </h3>
+                        {startingPrice != null && (
+                          <span className="font-sans font-bold text-primary text-xs mt-1 leading-none">
+                            From ₹{startingPrice.toLocaleString("en-IN")}/mo
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Scroll nudge buttons (desktop) */}
           <button

@@ -1,4 +1,7 @@
-import { CheckCircle, XCircle, MapPin, Shield } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle, XCircle, MapPin, Shield, Share2, Check } from "lucide-react";
+import { toast } from "sonner";
+import { shareProduct } from "@/lib/share";
 
 const STOCK_STATUS = {
   in_stock: { label: "In Stock", Icon: CheckCircle, className: "text-success" },
@@ -7,12 +10,46 @@ const STOCK_STATUS = {
 };
 
 const ProductInfo = ({ product }) => {
+  const [justCopied, setJustCopied] = useState(false);
+
+  const handleShare = async () => {
+    const result = await shareProduct({
+      id: product.id,
+      name: product.name,
+      price: product.pricing_by_duration?.["12_months"],
+    });
+
+    if (result === "copied") {
+      setJustCopied(true);
+      setTimeout(() => setJustCopied(false), 2000);
+      toast.success("Link copied to clipboard");
+    } else if (result === "failed") {
+      toast.error("Couldn't share this link");
+    }
+    // "shared" and "cancelled" need no feedback — the OS sheet already gave it.
+  };
+
   return (
     <div className="space-y-4">
       {/* Title */}
-      <h1 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-        {product.name}
-      </h1>
+      <div className="flex items-start justify-between gap-4">
+        <h1 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+          {product.name}
+        </h1>
+        <button
+          type="button"
+          onClick={handleShare}
+          aria-label={`Share ${product.name}`}
+          className="shrink-0 mt-1 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-sans font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          {justCopied ? (
+            <Check className="h-4 w-4 text-success" />
+          ) : (
+            <Share2 className="h-4 w-4" />
+          )}
+          <span className="hidden sm:inline">{justCopied ? "Copied" : "Share"}</span>
+        </button>
+      </div>
 
       {/* Subtitle */}
       {product.subtitle && (

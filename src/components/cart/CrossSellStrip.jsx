@@ -51,7 +51,7 @@ function pickAnchors(cartItems, products) {
 }
 
 const CrossSellStrip = () => {
-  const { cartItems, addToCart } = useCart();
+  const { cartItems, addToCart, selectedDuration, durationsInCart } = useCart();
   const { data: products = [] } = useProducts();
 
   const [winnerProductId, runnerUpProductId] = useMemo(
@@ -64,6 +64,12 @@ const CrossSellStrip = () => {
 
   const cartProductIds = useMemo(
     () => new Set(cartItems.map((i) => i.productId)),
+    [cartItems]
+  );
+
+  // Highest monthly price among items currently in the cart.
+  const maxCartPrice = useMemo(
+    () => cartItems.reduce((max, i) => Math.max(max, i.price ?? 0), 0),
     [cartItems]
   );
 
@@ -102,12 +108,35 @@ const CrossSellStrip = () => {
   const firstDuration = (product) =>
     DURATION_OPTIONS.find((d) => (product.pricing_by_duration?.[d.key] ?? 0) > 0)?.key ?? "3_months";
 
+  // The duration a quick-added item should inherit: match what other products
+  // in the cart belong to (the active duration group, or the first group
+  // present), falling back to 12 months when the cart has no duration context.
+  const targetDuration =
+    selectedDuration || durationsInCart[0] || "12_months";
+
+  // Pick the duration to add this product at: prefer the cart's target
+  // duration, but only if the product actually offers pricing for it —
+  // otherwise fall back to the product's first available duration so we
+  // never add a line with no price.
+  const resolveDuration = (product) =>
+    (product.pricing_by_duration?.[targetDuration] ?? 0) > 0
+      ? targetDuration
+      : firstDuration(product);
+
   const handleQuickAdd = (product) => {
-    const defaultDuration = firstDuration(product);
+    if (product.stock_status === "out_of_stock") {
+      toast.error(`${product.name} is out of stock`, {
+        description: "This item isn't available to rent right now.",
+      });
+      return;
+    }
+    const defaultDuration = resolveDuration(product);
     const basePrice = discountedRent(product.pricing_by_duration[defaultDuration], product.percent_discount);
     const label = DURATION_OPTIONS.find((d) => d.key === defaultDuration)?.label || "3 Months";
+    const depositWaived = basePrice < maxCartPrice;
 
     addToCart({
+      stock_status: product.stock_status,
       productId: product.id,
       name: product.name,
       duration: defaultDuration,
@@ -115,17 +144,21 @@ const CrossSellStrip = () => {
       price: basePrice,
       quantity: 1,
       startDate: new Date().toISOString().split("T")[0],
-      deposit: 0,
       image: product.image,
       category: product.category,
       subcategory_id: product.subcategory_id,
       rent: product.pricing_by_duration[defaultDuration],
       percent_discount: product.percent_discount,
-      security_multiple: 0,
+      // Real security stored always so CartContext can restore it when needed
+      _realSecurityMultiple: product.security_multiple ?? null,
+      _realAdvSecurity: product.adv_security ?? null,
+      depositWaived,
+      security_multiple: depositWaived ? 0 : (product.security_multiple ?? null),
+      adv_security: depositWaived ? 0 : (product.adv_security ?? null),
       isRecommendation: true,
     });
 
-    toast.success(`${product.name} added to cart`, {
+    toast.success(`${product.name} added to basket`, {
       description: `${label} plan · ₹${basePrice.toLocaleString("en-IN")}/mo`,
     });
   };
@@ -142,7 +175,7 @@ const CrossSellStrip = () => {
       <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar -mx-1 px-1">
         {suggestions.map((product) => {
           const displayPrice = discountedRent(
-            product.pricing_by_duration[firstDuration(product)] ?? 0,
+            product.pricing_by_duration[resolveDuration(product)] ?? 0,
             product.percent_discount
           );
 
@@ -153,7 +186,7 @@ const CrossSellStrip = () => {
             >
               <Link
                 to={`/product/${product.id}`}
-                className="w-full aspect-square bg-white rounded-xl overflow-hidden mb-3 block group"
+                className="w-full aspect-square bg-white rounded-xl overflow-hidden mb-3 block group border border-border/30 shadow-sm"
               >
                 <img
                   src={product.image}
@@ -164,23 +197,25 @@ const CrossSellStrip = () => {
               </Link>
 
               <Link to={`/product/${product.id}`} className="flex-1">
-                <h4 className="text-[12px] font-bold text-foreground line-clamp-2 mb-1.5 hover:text-primary transition-colors leading-tight">
+                <h4 className="text-[12px] font-bold text-foreground line-clamp-2 mb-1.5 hover:text-foreground transition-colors leading-tight">
                   {product.name}
                 </h4>
               </Link>
 
               <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
-                <span className="text-[12px] font-extrabold text-primary">
+                <span className="text-[12px] font-extrabold text-foreground">
                   ₹{displayPrice.toLocaleString("en-IN")}/mo
                 </span>
-                <span className="text-[10px] font-bold bg-success-muted text-success-muted-foreground border border-success-border px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                  0 deposit
-                </span>
+                {displayPrice < maxCartPrice && (
+                  <span className="text-[10px] font-bold bg-success-muted text-success-muted-foreground border border-success-border px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                    0 deposit
+                  </span>
+                )}
               </div>
 
               <button
                 onClick={() => handleQuickAdd(product)}
-                className="w-full flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl border-2 border-primary/20 text-primary text-[11px] font-bold hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-95"
+                className="w-full flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl border border-border text-foreground bg-secondary text-[11px] font-bold hover:bg-foreground hover:text-background hover:border-foreground transition-all active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add

@@ -87,11 +87,11 @@ const CheckoutContactModal = ({ open, onClose }) => {
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }, 320);
                     }}
-                    className="group flex items-center gap-4 px-4 py-3.5 rounded-2xl border border-border bg-background hover:border-primary/40 hover:bg-primary/[0.03] transition-all duration-200 no-underline"
+                    className="group flex items-center gap-4 px-4 py-3.5 rounded-2xl border border-border bg-background hover:border-foreground/35 hover:bg-secondary/40 transition-all duration-200 no-underline"
                   >
                     {/* City icon */}
-                    <div className="w-10 h-10 rounded-xl gradient-coral flex items-center justify-center flex-shrink-0 shadow-soft">
-                      <MapPin className="w-4 h-4 text-white" />
+                    <div className="w-10 h-10 rounded-xl bg-foreground flex items-center justify-center flex-shrink-0 shadow-soft">
+                      <MapPin className="w-4 h-4 text-background" />
                     </div>
 
                     {/* Text */}

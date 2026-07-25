@@ -4,10 +4,11 @@
  * Any 401 from the API should call clearToken() then getToken() to retry.
  */
 
-const APP_KEY = import.meta.env.VITE_API_APP_KEY?.trim();
-// In dev the Vite proxy forwards /api/* to the real server (avoids CORS).
-// In production the full URL is used directly (requires CORS headers from Shivam).
-const BASE = import.meta.env.DEV ? "/api" : import.meta.env.VITE_API_BASE_URL?.trim();
+import { APP_KEY, AWS_BASE } from "./config";
+
+// JWT mint goes to AWS_BASE — now testapi (the backend consolidated it off the
+// retired testaws server). All other API calls use API_BASE.
+// (In proxy mode both AWS_BASE and API_BASE point at the edge proxy.)
 
 let _token = null;
 let _inflight = null; // shared promise so parallel callers don't each fire a separate POST
@@ -19,15 +20,28 @@ export async function getToken() {
   return _inflight;
 }
 
-async function _refresh() {
-  const res = await fetch(`${BASE}/get-jwt-token`, {
+async function _fetchToken() {
+  const res = await fetch(`${AWS_BASE}/get-jwt-token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ app_key: APP_KEY }),
   });
   if (!res.ok) throw new Error(`Auth: token fetch failed (${res.status})`);
-  const json = await res.json();
-  _token = json.data.jwt_token;
+  const json = await res.json().catch(() => null);
+  const token = json?.data?.jwt_token;
+  if (!token) throw new Error("Auth: token missing from response");
+  return token;
+}
+
+async function _refresh() {
+  try {
+    _token = await _fetchToken();
+  } catch (err) {
+    // Single retry after 1.5 s — handles transient testaws blips without
+    // cascading every API call on the page into a failure.
+    await new Promise((r) => setTimeout(r, 1500));
+    _token = await _fetchToken();
+  }
   return _token;
 }
 

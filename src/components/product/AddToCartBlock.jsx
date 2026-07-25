@@ -2,6 +2,7 @@ import { Minus, Plus, ShieldCheck, Clock, ArrowRightLeft, Headphones } from "luc
 import { useCart } from "@/context/CartContext";
 import { DURATION_OPTIONS } from "@/data/products";
 import { discountedRent } from "@/lib/pricing";
+import { dateNDaysFromToday } from "@/lib/delivery";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -12,8 +13,15 @@ const AddToCartBlock = ({ product, selectedDuration, quantity, onQuantityChange 
   const pricing = product.pricing_by_duration;
   const price = discountedRent(pricing[selectedDuration] || 0, product.percent_discount);
   const durationLabel = DURATION_OPTIONS.find((d) => d.key === selectedDuration)?.label || "";
+  const isOutOfStock = product.stock_status === "out_of_stock";
 
   const handleAddToCart = () => {
+    if (isOutOfStock) {
+      toast.error(`${product.name} is out of stock`, {
+        description: "This item isn't available to rent right now.",
+      });
+      return;
+    }
     addToCart({
       productId: product.id,
       name: product.name,
@@ -21,7 +29,7 @@ const AddToCartBlock = ({ product, selectedDuration, quantity, onQuantityChange 
       durationLabel,
       price,
       quantity,
-      startDate: new Date().toISOString().split("T")[0],
+      startDate: dateNDaysFromToday(0),
       adv_security: product.adv_security,
       image: product.image,
       category: product.category,
@@ -29,11 +37,12 @@ const AddToCartBlock = ({ product, selectedDuration, quantity, onQuantityChange 
       rent: product.pricing_by_duration[selectedDuration],
       percent_discount: product.percent_discount,
       security_multiple: product.security_multiple,
+      stock_status: product.stock_status,
     });
-    toast.success(`${product.name} added to cart`, {
+    toast.success(`${product.name} added to basket`, {
       description: `${durationLabel} plan · ₹${price.toLocaleString("en-IN")}`,
     });
-    navigate("/cart");
+    navigate("/basket");
   };
 
   const trustPoints = [
@@ -74,9 +83,10 @@ const AddToCartBlock = ({ product, selectedDuration, quantity, onQuantityChange 
       <div className="flex flex-col gap-2.5">
         <button
           onClick={handleAddToCart}
-          className="btn-gradient-coral w-full py-3.5 text-base font-semibold"
+          disabled={isOutOfStock}
+          className="btn-gradient-coral w-full py-3.5 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale"
         >
-          Add to Cart
+          {isOutOfStock ? "Out of Stock" : "Add to Basket"}
         </button>
       </div>
 

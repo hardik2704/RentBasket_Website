@@ -16,12 +16,12 @@ import staticProducts, {
   getProductById as getStaticById,
   getRelatedProducts as getStaticRelated,
 } from "@/data/products";
-import { getToken, clearToken } from "./auth";
+import { API_BASE, CATALOG_API_KEY, USING_MOCK_DATA } from "./config";
+import { authFetch } from "./client";
 
-const VITE_BASE = import.meta.env.VITE_API_BASE_URL?.trim();
-
-/** True when no API base URL is configured — falls back to bundled mock data. */
-export const USING_MOCK_DATA = !VITE_BASE;
+// USING_MOCK_DATA / API_BASE / CATALOG_API_KEY now come from the config seam
+// (src/api/config.js). Re-export so existing `@/api/products` imports keep working.
+export { USING_MOCK_DATA };
 
 // Guard against a silent misconfiguration: a *production* build with no API URL
 // means the deploy environment never set VITE_API_BASE_URL, so the site quietly
@@ -36,35 +36,17 @@ if (USING_MOCK_DATA && import.meta.env.PROD) {
   );
 }
 
-// In dev the Vite proxy forwards /api/* to the real server (avoids CORS).
-// In production the full URL is used directly.
-const API_BASE = import.meta.env.DEV ? "/api" : VITE_BASE;
-
-// Static API key for the bulk catalog endpoint — uses Authorization-Key header
-// instead of the Bearer JWT used by all other endpoints.
-const CATALOG_API_KEY = import.meta.env.VITE_CATALOG_API_KEY?.trim();
-
 // ---------------------------------------------------------------------------
 // Low-level fetch helpers
 // ---------------------------------------------------------------------------
 
 /** Standard fetch — attaches Bearer JWT, retries once on 401. */
 async function apiFetch(path) {
-  const token = await getToken();
-  let res = await fetch(`${API_BASE}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  if (res.status === 401) {
-    clearToken();
-    const fresh = await getToken();
-    res = await fetch(`${API_BASE}${path}`, {
-      headers: { Authorization: `Bearer ${fresh}` },
-    });
-  }
-
+  const res = await authFetch(path);
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`);
-  return res.json();
+  const json = await res.json().catch(() => null);
+  if (!json) throw new Error(`API ${path} returned non-JSON response`);
+  return json;
 }
 
 /** Catalog-specific fetch — uses the static Authorization-Key header. */
@@ -73,7 +55,9 @@ async function catalogFetch(path) {
     headers: { "Authorization-Key": CATALOG_API_KEY },
   });
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`);
-  return res.json();
+  const json = await res.json().catch(() => null);
+  if (!json) throw new Error(`API ${path} returned non-JSON response`);
+  return json;
 }
 
 // ---------------------------------------------------------------------------
@@ -99,9 +83,27 @@ function normalizeProduct(item, meta = {}) {
   if ((item.rent_9 ?? 0) > 0) pricing["9_months"] = item.rent_9;
   if ((item.rent_12 ?? 0) > 0) pricing["12_months"] = item.rent_12;
 
+  // Short-term tiers (day/week-scale rent). Their presence is what makes a
+  // product eligible for the "Short-Term Rental" category — the API has no
+  // explicit flag, so we derive it from these rent fields actually existing.
+  const hasShortTerm = [
+    item.rent_01d, item.rent_08d, item.rent_15d, item.rent_30d, item.rent_60d,
+  ].some((v) => (v ?? 0) > 0);
+
+  // Catalog "tags" — derived from what the API does expose. is_trending is the
+  // only popularity signal available, so it doubles as the Bestseller marker.
+  // (best_for / "Complete Home Setup" have no API field yet, so those filters
+  // stay empty until the backend provides them.)
+  const tags = [];
+  if (item.is_trending === 1) tags.push("Bestseller");
+  if (hasShortTerm) tags.push("Event-ready");
+
   return {
     id: String(item.amenity_type_id),
-    name: item.amenity_type_name,
+    // Display name now comes from prod_title (DB field added in the catalog
+    // rework); fall back to the legacy amenity_type_name while prod_title is
+    // still being backfilled so the grid never renders a blank name.
+    name: item.prod_title ?? item.amenity_type_name,
     subtitle: item.prod_subtitle ?? null,
     // prod_description is being filled progressively — nullable until complete
     description: item.prod_description ?? null,
@@ -116,6 +118,8 @@ function normalizeProduct(item, meta = {}) {
     // in_stock: 1 = In Stock, 2 = Out of Stock, 0 = DB error (treat as In Stock)
     stock_status: item.in_stock === 2 ? "out_of_stock" : "in_stock",
     is_trending: item.is_trending === 1,
+    tags,
+    has_short_term: hasShortTerm,
     category: meta.categoryName ?? null,
     subcategory: meta.subcategoryName ?? null,
     subcategory_id: meta.subcategoryId ?? null,
@@ -139,6 +143,9 @@ const CATEGORY_ID_TO_NAME = {
 /** Single-call path: bulk endpoint now includes subcategory_label, so 1 request total. */
 async function loadAllProductsBulk() {
   const res = await catalogFetch("/get-amenity-types");
+  if (!Array.isArray(res?.data?.items)) {
+    throw new Error("Bulk catalog response missing data.items array");
+  }
   return res.data.items.map((item) =>
     normalizeProduct(item, {
       categoryName: CATEGORY_ID_TO_NAME[item.category_id] ?? null,
@@ -151,6 +158,9 @@ async function loadAllProductsBulk() {
 /** Fallback 3-tier path when VITE_CATALOG_API_KEY is not set. */
 async function loadAllProductsLegacy() {
   const catRes = await apiFetch("/get-amenity-category");
+  if (!Array.isArray(catRes?.data?.categories)) {
+    throw new Error("Category response missing data.categories array");
+  }
   const cats = catRes.data.categories.filter((c) =>
     CATALOG_CATEGORY_IDS.includes(c.category_type)
   );
@@ -158,9 +168,10 @@ async function loadAllProductsLegacy() {
   const subResults = await Promise.all(
     cats.map((cat) =>
       apiFetch(`/get-subcategories-by-category?category_id=${cat.category_type}`)
-        .then((r) =>
-          r.data.items.map((sub) => ({ ...sub, categoryName: cat.category_name }))
-        )
+        .then((r) => {
+          if (!Array.isArray(r?.data?.items)) return [];
+          return r.data.items.map((sub) => ({ ...sub, categoryName: cat.category_name }));
+        })
     )
   );
   const subs = subResults.flat();
@@ -168,15 +179,16 @@ async function loadAllProductsLegacy() {
   const prodResults = await Promise.all(
     subs.map((sub) =>
       apiFetch(`/get-amenity-types-by-subcategory?subcategory_id=${sub.id}`)
-        .then((r) =>
-          r.data.items.map((item) =>
+        .then((r) => {
+          if (!Array.isArray(r?.data?.items)) return [];
+          return r.data.items.map((item) =>
             normalizeProduct(item, {
               categoryName: sub.categoryName,
               subcategoryName: sub.subcategory_name,
               subcategoryId: sub.id,
             })
-          )
-        )
+          );
+        })
     )
   );
 

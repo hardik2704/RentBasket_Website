@@ -4,18 +4,25 @@ import { AlertCircle, RotateCw, ArrowUp } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CatalogHero from "@/components/catalog/CatalogHero";
 import CategoryTabs from "@/components/catalog/CategoryTabs";
-import FilterBar from "@/components/catalog/FilterBar";
+import FilterBar, { FilterSidebar } from "@/components/catalog/FilterBar";
 import ProductGrid from "@/components/catalog/ProductGrid";
 import TrustBenefits from "@/components/catalog/TrustBenefits";
 import CatalogCTA from "@/components/catalog/CatalogCTA";
-import { CATEGORIES } from "@/data/products";
+import { CATEGORIES, DURATION_OPTIONS } from "@/data/products";
 import { useProducts } from "@/hooks/useProducts";
+import { searchProducts } from "@/lib/search";
+
+// Map a duration filter LABEL ("12 Months") → pricing key ("12_months").
+const durationKeyForLabel = (label) =>
+  DURATION_OPTIONS.find((d) => d.label === label)?.key ?? null;
+
+// Default duration shown on the cards when no duration filter is active.
+const DEFAULT_DURATION_KEY = "12_months";
 
 /** Placeholder cards shown while the catalog is being fetched. */
 const CatalogGridSkeleton = () => (
-  <section className="section-container py-8 md:py-12">
+  <section className="py-4">
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
       {Array.from({ length: 8 }).map((_, i) => (
         <div
@@ -37,7 +44,7 @@ const CatalogGridSkeleton = () => (
 
 /** Shown when the catalog fails to load, with a retry. */
 const CatalogGridError = ({ onRetry }) => (
-  <section className="section-container py-8 md:py-12">
+  <section className="py-4">
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
         <AlertCircle className="w-7 h-7 text-muted-foreground" />
@@ -83,11 +90,38 @@ const Catalog = () => {
     }
   }, [searchParams]);
 
+  const searchQuery = searchParams.get("q") || "";
+
+  // The duration whose price the cards display. Follows the active duration
+  // filter; falls back to 12 months when no duration is selected.
+  const displayDurationKey =
+    durationKeyForLabel(filters.duration) ?? DEFAULT_DURATION_KEY;
+
   // Filtered and sorted products
   const minPrice = (p) => {
     const vals = Object.values(p.pricing_by_duration ?? {}).filter((v) => v > 0);
     return vals.length ? Math.min(...vals) : Infinity;
   };
+
+  // Subcategories per category, derived live from the loaded products — the API
+  // (subcategory_label) is the source of truth, so chips auto-update when the
+  // backend adds/renames a subcategory instead of going stale against a hardcoded
+  // list. Order follows first appearance in the catalog. Only "real" categories
+  // (those matching a product's `category` field) get chips — the derived ones
+  // like Bestsellers / Short-Term Rental span categories and have none.
+  const subcategoriesByCategory = useMemo(() => {
+    const map = {};
+    for (const p of products) {
+      const cat = p.category;
+      const sub = p.subcategory;
+      if (!cat || !sub) continue;
+      if (!map[cat]) map[cat] = [];
+      if (!map[cat].includes(sub)) map[cat].push(sub);
+    }
+    return map;
+  }, [products]);
+
+  const activeSubcategories = subcategoriesByCategory[activeCategory] ?? [];
 
   const nonEmptyCategories = useMemo(() => {
     const set = new Set(["All"]);
@@ -147,6 +181,11 @@ const Catalog = () => {
       result = result.filter((p) => p.subcategory === activeSubcategory);
     }
 
+    // Search query filter (fuzzy + synonyms via Fuse.js)
+    if (searchQuery.trim()) {
+      result = searchProducts(result, searchQuery);
+    }
+
     // Availability filter
     if (filters.availability) {
       result = result.filter((p) => p.stock_status === "in_stock");
@@ -156,6 +195,18 @@ const Catalog = () => {
     if (filters.bestFor) {
       result = result.filter((p) => p.best_for?.includes(filters.bestFor));
     }
+
+    // Duration filter — only keep products that actually have a price for the
+    // chosen duration (the cards then render that duration's price).
+    const durationKey = durationKeyForLabel(filters.duration);
+    if (durationKey) {
+      result = result.filter(
+        (p) => (p.pricing_by_duration?.[durationKey] ?? 0) > 0
+      );
+    }
+
+    // Skip sort when search is active — results are already ranked by relevance
+    if (searchQuery.trim()) return result;
 
     // Sorting
     switch (sortBy) {
@@ -185,33 +236,56 @@ const Catalog = () => {
     }
 
     return result;
-  }, [products, activeCategory, activeSubcategory, filters, sortBy]);
+  }, [products, activeCategory, activeSubcategory, filters, sortBy, searchQuery]);
 
   return (
-    <div className="min-h-screen dot-bg">
+    <div className="min-h-screen">
       <Header />
       <main>
-        <CatalogHero />
         <CategoryTabs
           activeCategory={activeCategory}
           onCategoryChange={setActiveCategory}
           activeSubcategory={activeSubcategory}
           onSubcategoryChange={setActiveSubcategory}
           nonEmptyCategories={isLoading ? null : nonEmptyCategories}
+          subcategories={activeSubcategories}
         />
-        <FilterBar
-          filters={filters}
-          onFilterChange={setFilters}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-        />
-        {isLoading ? (
-          <CatalogGridSkeleton />
-        ) : isError ? (
-          <CatalogGridError onRetry={() => refetch()} />
-        ) : (
-          <ProductGrid products={filteredProducts} />
-        )}
+        <div id="catalog-results" />
+
+        {/* Mobile filter bar — hidden on desktop */}
+        <div className="md:hidden">
+          <FilterBar
+            filters={filters}
+            onFilterChange={setFilters}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+          />
+        </div>
+
+        {/* Desktop: sidebar + grid */}
+        <div className="section-container py-6 md:py-8">
+          <div className="flex gap-8 items-start">
+            <FilterSidebar
+              filters={filters}
+              onFilterChange={setFilters}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+            <div className="flex-1 min-w-0">
+              {isLoading ? (
+                <CatalogGridSkeleton />
+              ) : isError ? (
+                <CatalogGridError onRetry={() => refetch()} />
+              ) : (
+                <ProductGrid
+                  products={filteredProducts}
+                  displayDuration={displayDurationKey}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
         <TrustBenefits />
         <CatalogCTA />
       </main>

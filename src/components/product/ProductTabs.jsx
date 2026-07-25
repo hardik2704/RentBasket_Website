@@ -67,7 +67,7 @@ const ProductTabs = ({ product }) => {
             </p>
             <Link
               to="/terms-n-conditions"
-              className="inline-block text-sm text-primary underline underline-offset-2 hover:opacity-75 transition-opacity"
+              className="inline-block text-sm text-foreground font-semibold underline underline-offset-2 hover:opacity-75 transition-opacity"
             >
               View full Terms & Conditions →
             </Link>
@@ -95,7 +95,7 @@ const ProductTabs = ({ product }) => {
               onClick={() => setActiveTab(tab.key)}
               className={`px-5 py-3 text-sm font-medium transition-all relative ${
                 activeTab === tab.key
-                  ? "text-primary"
+                  ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -103,7 +103,7 @@ const ProductTabs = ({ product }) => {
               {activeTab === tab.key && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground rounded-full"
                 />
               )}
             </button>

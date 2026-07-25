@@ -1,0 +1,12 @@
+# Security response headers — applied by hosts that support a _headers file
+# (Netlify, Cloudflare Pages). On hosts that don't (e.g. GitHub Pages) this file
+# is ignored; the production CSP is also injected as a <meta> tag at build time
+# (see vite.config.js → cspMeta) so the core policy applies everywhere.
+#
+# These real headers add what a <meta> CSP cannot: frame-ancestors, nosniff,
+# referrer policy, and X-Frame-Options.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.razorpay.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://*.razorpay.com; connect-src 'self' https://*.rentbasket.com https://*.razorpay.com https://nominatim.openstreetmap.org https://www.googletagmanager.com https://www.google-analytics.com https://*.analytics.google.com; frame-src https://*.razorpay.com; media-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY

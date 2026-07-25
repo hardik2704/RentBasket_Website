@@ -42,7 +42,7 @@ const ProductGallery = ({ product }) => {
               key={i}
               className={`text-[10px] md:text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm ${
                 i === 0
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-foreground text-background font-medium"
                   : "bg-white/90 text-foreground backdrop-blur-sm border border-border/50"
               }`}
             >
@@ -87,8 +87,8 @@ const ProductGallery = ({ product }) => {
               onClick={() => setActiveIndex(i)}
               className={`w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 overflow-hidden bg-white transition-all duration-200 flex-shrink-0 ${
                 activeIndex === i
-                  ? "border-primary shadow-soft"
-                  : "border-border hover:border-primary/40"
+                  ? "border-foreground shadow-sm"
+                  : "border-border hover:border-foreground/35"
               }`}
             >
               <img

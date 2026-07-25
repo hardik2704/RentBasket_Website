@@ -92,6 +92,10 @@ const About = () => {
                 <p className="font-medium text-[#040404] border-t border-gray-100 pt-6 mt-6">
                   RentBasket is everything we've learned — turned into India's most trusted rental ecosystem for comfort living.
                 </p>
+
+                <p className="text-xs text-muted-foreground">
+                  RentBasket is a brand operated by IG RentOK Private Limited.
+                </p>
               </div>
             </div>
 

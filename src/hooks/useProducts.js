@@ -41,6 +41,7 @@ export function useProduct(id) {
     queryKey: productKeys.detail(id),
     queryFn: () => fetchProductById(id),
     enabled: Boolean(id),
+    retry: 1,
     initialData: () => {
       const all = queryClient.getQueryData(productKeys.all);
       return all?.find((p) => String(p.id) === String(id));

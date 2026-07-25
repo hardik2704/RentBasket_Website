@@ -1,139 +1,150 @@
-import { Truck, Wrench, Home, Package } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Sliders, Wrench, Phone, Sparkles, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
 
 const features = [
   {
-    icon: Truck,
-    title: "Free Delivery & Installation",
-    description: "Move in faster. We deliver and install at no extra cost.",
-    bgColor: "bg-primary",
+    icon: Sliders,
+    title: "Customizations",
+    description: "Tailor your furniture to your space and style — make it truly yours.",
   },
   {
     icon: Wrench,
-    title: "Free Maintenance & Repair",
-    description:
-      "If something stops working, we fix it - quickly and responsibly.",
-    bgColor: "bg-primary",
+    title: "Free Maintenance and Repair",
+    description: "If something stops working, we fix or replace it — quickly and responsibly, with no hidden cost.",
   },
   {
-    icon: Home,
-    title: "Complete Home Setup under ₹6,000/month ",
-    description:
-      "Set up your home under ₹6,000/month with smart combos and essentials.",
-    bgColor: "bg-primary",
+    icon: Phone,
+    title: "Consultation on Call",
+    description: "Not sure what you need? Talk to us and we'll help you plan the perfect setup.",
   },
   {
-    icon: Package,
-    title: "Free Relocation",
-    description:
-      "Life changes. Your furniture plan should too. Relocate without the headache.",
-    bgColor: "bg-primary",
+    icon: Sparkles,
+    title: "Try First, Pay Later",
+    description: "Try it before you commit and pay later — on selected products.",
   },
 ];
 
 const WhatMakesDifferent = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
   return (
-    <>
-      <section className="section-container pt-10 md:pt-14 pb-6 md:pb-8 bg-cream/50">
-        <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-8">
-          What makes RentBasket Different
-        </h2>
+    <section className="bg-cream/35 py-8 md:py-12 border-t border-b border-border/20">
+      <div className="section-container">
 
-        {/* Desktop Grid */}
-        <div className="hidden md:grid grid-cols-1 md:grid-cols-4 gap-6 max-w-7xl mx-auto p-5">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-card border border-border rounded-md p-6 shadow-soft hover:shadow-card transition-shadow"
-            >
-              <div className="flex items-start gap-3 mb-4">
-                <div
-                  className={`w-8 h-8 rounded-lg ${feature.bgColor} flex items-center justify-center flex-shrink-0 shadow-md`}
-                >
-                  <feature.icon className="w-4 h-4 text-white stroke-[2.5]" />
-                </div>
-                <h6 className="text-md leading-tight font-semibold font-sans">
-                  {feature.title}
-                </h6>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+        {/* Editorial Title */}
+        <div className="text-center max-w-xl mx-auto mb-6 md:mb-8 px-4">
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight leading-[1.25] sm:leading-[1.5]">
+            What makes RentBasket <span className="font-script normal-case font-normal text-[0.88em] tracking-normal inline-block ml-1 mt-0.5 mb-0.5 sm:mt-2 sm:mb-2">different</span>
+          </h2>
+          <p className="font-sans text-sm text-muted-foreground mt-2 sm:mt-4">
+            Zero hassle, transparent pricing, <span className="whitespace-nowrap">built for relocation.</span>
+          </p>
         </div>
 
-        {/* Mobile/Tablet Stack (normal scrolling) */}
-        <div className="md:hidden flex flex-col gap-4 max-w-5xl mx-auto p-5">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-card border border-border rounded-2xl p-6 shadow-soft hover:shadow-card transition-all duration-300"
-            >
-              <div className="flex items-start gap-3 mb-4">
-                <div
-                  className={`w-8 h-8 rounded-lg ${feature.bgColor} flex items-center justify-center flex-shrink-0 shadow-md`}
-                >
-                  <feature.icon className="w-4 h-4 text-white stroke-[2.5]" />
-                </div>
-                <h6 className="font-semibold text-md leading-tight font-sans">
-                  {feature.title}
-                </h6>
-              </div>
-              <p className="text-md text-muted-foreground text-center">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col lg:hidden text-center mt-8">
-          <h3 className="text-2xl md:text-3xl font-bold mb-6 font-sans">
-            Get Started Today!
-          </h3>
-          <div className="flex flex-col gap-4 justify-center">
-            <Link
-              to="/catalog"
-              className="w-full flex justify-center"
-            >
-              <button
-                className="btn-outline"
-                style={{
-                  width: "70%",
-                  margin: "auto",
-                }}
+        {/* ── Laptop/Desktop Layout (4-Column Grid) ── */}
+        <motion.div
+          className="hidden md:grid grid-cols-4 gap-5 max-w-7xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div
+                key={index}
+                className="h-full bg-background border border-border/40 rounded-2xl p-5 shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3"
+                variants={cardVariants}
               >
-                Browse Catalogue
-              </button>
-            </Link>
-          </div>
-        </div>
+                <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary shrink-0 border border-primary/10">
+                  <Icon className="w-6 h-6 stroke-[2]" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <h3 className="font-display font-semibold text-foreground text-lg leading-snug">
+                    {feature.title}
+                  </h3>
+                  <p className="font-sans text-[15px] text-muted-foreground leading-snug">
+                    {feature.description}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
 
-        <div className="hidden lg:flex flex-col text-center mt-8">
-          <h3 className="text-2xl md:text-3xl font-sans font-bold mb-6">
-            Get Started Today!
-          </h3>
-          <div className="flex flex-col gap-4 justify-center">
-            <Link
-              to="/catalog"
-              className="w-full flex justify-center"
-            >
-              <button
-                className="btn-outline"
-                style={{
-                  width: "20%",
-                  margin: "auto",
-                }}
+        {/* ── Mobile Viewport Layout (Compact Vertical Accordion) ── */}
+        <div className="md:hidden flex flex-col gap-3 w-full max-w-sm mx-auto px-2">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            const isActive = activeIndex === index;
+            return (
+              <div
+                key={index}
+                className="bg-background border border-border/40 rounded-xl overflow-hidden transition-all duration-300 shadow-soft"
               >
-                Browse Catalogue
-              </button>
-            </Link>
-          </div>
+                <button
+                  onClick={() => setActiveIndex(isActive ? -1 : index)}
+                  className="w-full flex items-center justify-between p-4 text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary shrink-0">
+                      <Icon className="w-5 h-5 stroke-[2]" />
+                    </div>
+                    <h3 className="font-display font-semibold text-foreground text-base sm:text-lg leading-none">
+                      {feature.title}
+                    </h3>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ease-out shrink-0 ml-2 ${isActive ? "rotate-180" : ""}`} />
+                </button>
+                <AnimatePresence initial={false}>
+                  {isActive && (
+                    <motion.div
+                      key="content"
+                      initial="collapsed"
+                      animate="open"
+                      exit="collapsed"
+                      variants={{
+                        open: { height: "auto", opacity: 1 },
+                        collapsed: { height: 0, opacity: 0 },
+                      }}
+                      transition={{
+                        height: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+                        opacity: { duration: 0.25, ease: "easeInOut", delay: isActive ? 0.05 : 0 },
+                      }}
+                      className="overflow-hidden"
+                    >
+                      <p className="px-4 pb-4 font-sans text-sm text-muted-foreground leading-relaxed pl-[52px]">
+                        {feature.description}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
-      </section>
 
-      <div className="flex justify-center w-full pt-4 bg-gradient-to-t from-cream to-secondary/40 dark:from-secondary dark:to-transparent" />
-    </>
+      </div>
+    </section>
   );
 };
 
